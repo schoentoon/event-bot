@@ -1,0 +1,5 @@
+telegram:
+  token: "REPLACE THIS WITH YOUR OWN TOKEN"
+  debug: true
+postgres:
+  addr: "user=events host=db dbname=events password=3v3n5"

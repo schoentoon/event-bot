@@ -1,0 +1,29 @@
+image: golang:latest
+
+stages:
+  - test
+  - build
+
+test:
+  stage: test
+  script:
+    - go test -v -race ./...
+
+vet:
+  stage: test
+  script:
+    - go vet ./...
+
+golangci-lint:
+  stage: test
+  image:
+    name: golangci/golangci-lint:latest
+    entrypoint: [""]
+  script:
+    - go get
+    - golangci-lint run ./...
+
+build:
+  stage: build
+  script:
+    - go build ./...

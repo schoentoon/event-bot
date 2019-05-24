@@ -1,0 +1,17 @@
+version: '2'
+services:
+  db:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: 3v3n5
+      POSTGRES_USER: events
+      POSTGRES_DB: events
+
+  bot:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./config.yml:/app/config.yml
+    links:
+      - db
