@@ -50,6 +50,8 @@ func main() {
 			} else {
 				handlePrivateMessage(db, bot, update.Message)
 			}
+		} else if update.InlineQuery != nil {
+			handleInlineQuery(db, bot, update.InlineQuery)
 		}
 		log.Println(update)
 	}
