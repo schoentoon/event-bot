@@ -14,7 +14,10 @@ func handleNewEvent(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message) err
 			return err
 		}
 
-		row := tx.QueryRow(`INSERT INTO public.events ("owner") VALUES ($1) RETURNING id`, msg.From.ID)
+		row := tx.QueryRow(`INSERT INTO public.events ("owner")
+			VALUES ($1)
+			RETURNING id`,
+				msg.From.ID)
 		var id int64
 		err = row.Scan(&id)
 		if err != nil {
@@ -40,7 +43,11 @@ func handleNewEvent(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message) err
 
 
 func handlePrivateMessage(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message) error {
-	row := db.QueryRow(`SELECT id, insert_state FROM public.events WHERE "owner" = $1 AND insert_state != 'done'`, msg.Chat.ID)
+	row := db.QueryRow(`SELECT id, insert_state
+		FROM public.events
+		WHERE "owner" = $1
+		AND insert_state != 'done'`,
+			msg.Chat.ID)
 	var state string
 	var id int64
 
@@ -55,13 +62,26 @@ func handlePrivateMessage(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Messag
 			return err, -1
 		}
 
+		text := msg.Text
+		if text == "/skip" {
+			text = ""
+		}
+
 		processedState := -1
 		if state == "waiting_for_name" {
 			processedState = 1
-			_, err = tx.Exec(`UPDATE public.events SET name = $1, insert_state = 'waiting_for_description' WHERE id = $2`, msg.Text, id)
+			_, err = tx.Exec(`UPDATE public.events
+				SET name = $1,
+				insert_state = 'waiting_for_description'
+				WHERE id = $2`,
+					text, id)
 		} else if state == "waiting_for_description" {
 			processedState = 2
-			_, err = tx.Exec(`UPDATE public.events SET description = $1, insert_state = 'done' WHERE id = $2`, msg.Text, id)
+			_, err = tx.Exec(`UPDATE public.events
+				SET description = $1,
+				insert_state = 'done'
+				WHERE id = $2`,
+					text, id)
 		}
 
 		if err != nil {
