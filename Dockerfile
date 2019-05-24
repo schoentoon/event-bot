@@ -2,9 +2,11 @@ FROM golang as builder
 
 WORKDIR /app
 
-COPY . /app
+COPY go.mod go.sum /app/
 
 RUN go get .
+
+COPY . /app
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
 

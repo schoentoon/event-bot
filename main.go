@@ -44,6 +44,13 @@ func main() {
 	}
 	
 	for update := range updates {
+		if update.Message != nil {
+			if update.Message.Text == "/newevent" {
+				handleNewEvent(db, bot, update.Message)
+			} else {
+				handlePrivateMessage(db, bot, update.Message)
+			}
+		}
 		log.Println(update)
 	}
 }
