@@ -12,7 +12,10 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 	rows, err := db.Query(`SELECT id, name, description
 		FROM public.events
 		WHERE "owner" = $1
-		AND insert_state = 'done'`,
+		AND insert_state = 'done'
+		AND ($2 SIMILAR TO name OR
+			 $2 SIMILAR TO description OR
+			 id = $2)`,
 			query.From.ID)
 	if err != nil {
 		return err

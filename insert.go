@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"database/sql"
+	"fmt"
 
 	"gopkg.in/telegram-bot-api.v4"
 )
@@ -98,6 +99,12 @@ func handlePrivateMessage(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Messag
 			reply = tgbotapi.NewMessage(msg.Chat.ID, "Set name accordingly, please enter description for the event. Use /skip to have no description.")
 		case 2:
 			reply = tgbotapi.NewMessage(msg.Chat.ID, "Congratz! Event created succesfully!")
+			keyboard := tgbotapi.NewInlineKeyboardMarkup(
+				tgbotapi.NewInlineKeyboardRow(
+					tgbotapi.NewInlineKeyboardButtonSwitch("Share", fmt.Sprintf("%d", id)),
+				),
+			)
+			reply.ReplyMarkup = keyboard
 		}
 	} else {
 		reply = tgbotapi.NewMessage(msg.Chat.ID, "Something went wrong while creating the event, please try again later.")
