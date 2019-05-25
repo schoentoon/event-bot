@@ -2,14 +2,18 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"strconv"
 
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQuery) error {
+	idFromQuery, err := strconv.ParseInt(query.Query, 10, 64)
+	if err != nil {
+		idFromQuery = -1
+	}
+
 	rows, err := db.Query(`SELECT id, name, description
 		FROM public.events
 		WHERE "owner" = $1
@@ -17,7 +21,7 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		AND (name SIMILAR TO concat('%', $2::text, '%') OR
 			 description SIMILAR TO concat('%', $2::text, '%') OR
 			 id = $3)`,
-			query.From.ID, query.Query, fmt.Sprintf("%d", query.From.ID))
+		query.From.ID, query.Query, idFromQuery)
 	if err != nil {
 		return err
 	}
@@ -37,7 +41,7 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		if err != nil {
 			return err
 		}
-		art := tgbotapi.NewInlineQueryResultArticle(strconv.FormatInt(id, 10), name, "Shared text: " + description)
+		art := tgbotapi.NewInlineQueryResultArticle(strconv.FormatInt(id, 10), name, "Shared text: "+description)
 		art.Description = description
 		inlineConf.Results = append(inlineConf.Results, art)
 	}
