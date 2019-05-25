@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -13,10 +14,10 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		FROM public.events
 		WHERE "owner" = $1
 		AND insert_state = 'done'
-		AND ($2 SIMILAR TO name OR
-			 $2 SIMILAR TO description OR
-			 id = $2)`,
-			query.From.ID)
+		AND (name SIMILAR TO concat('%', $2::text, '%') OR
+			 description SIMILAR TO concat('%', $2::text, '%') OR
+			 id = $3)`,
+			query.From.ID, query.Query, fmt.Sprintf("%d", query.From.ID))
 	if err != nil {
 		return err
 	}
@@ -36,7 +37,7 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		if err != nil {
 			return err
 		}
-		art := tgbotapi.NewInlineQueryResultArticle(strconv.FormatInt(id, 10), name, description)
+		art := tgbotapi.NewInlineQueryResultArticle(strconv.FormatInt(id, 10), name, "Shared text: " + description)
 		art.Description = description
 		inlineConf.Results = append(inlineConf.Results, art)
 	}
