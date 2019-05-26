@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"database/sql"
 	"flag"
+	"log"
 
 	_ "github.com/lib/pq"
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func main() {
@@ -40,19 +40,28 @@ func main() {
 	u.Timeout = 60
 	updates, err := bot.GetUpdatesChan(u)
 	if err != nil {
-		panic(err) 
+		panic(err)
 	}
-	
+
 	for update := range updates {
 		if update.Message != nil {
-			if update.Message.Text == "/newevent" {
-				handleNewEvent(db, bot, update.Message)
-			} else {
+			if update.Message.IsCommand() {
+				switch update.Message.Command() {
+				case "newevent":
+					handleNewEvent(db, bot, update.Message)
+				}
+			} else if update.Message.Chat.IsPrivate() {
 				handlePrivateMessage(db, bot, update.Message)
+			} else {
+				log.Printf("Unhandled message %#v", update.Message)
+				edit := tgbotapi.NewEditMessageText(update.Message.Chat.ID, update.Message.MessageID, "penis")
+				bot.Send(edit)
 			}
 		} else if update.InlineQuery != nil {
 			handleInlineQuery(db, bot, update.InlineQuery)
+		} else if update.ChosenInlineResult != nil {
+			log.Printf("%#v", update.ChosenInlineResult)
 		}
-		log.Println(update)
+		log.Printf("%#v", update)
 	}
 }
