@@ -16,7 +16,7 @@ func worker(wg *sync.WaitGroup, db *sql.DB, bot *tgbotapi.BotAPI, ch tgbotapi.Up
 	for update := range ch {
 		err := job(update, db, bot)
 		if err != nil {
-			log.Println("%#v on %#v", err, update)
+			log.Printf("%#v on %#v", err, update)
 		}
 	}
 }
@@ -47,6 +47,7 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 		return handleInlineQuery(db, bot, update.InlineQuery)
 	} else if update.ChosenInlineResult != nil {
 		log.Printf("%#v", update.ChosenInlineResult)
+		return handleChoseInlineResult(db, update.ChosenInlineResult)
 	} else if update.CallbackQuery != nil {
 		log.Printf("CALLBACK %#v", update.CallbackQuery)
 	}
