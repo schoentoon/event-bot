@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
-	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	_ "github.com/lib/pq"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
