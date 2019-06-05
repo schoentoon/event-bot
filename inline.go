@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"fmt"
 	"strconv"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
@@ -17,7 +18,6 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 	rows, err := db.Query(`SELECT id, name, description
 		FROM public.events
 		WHERE "owner" = $1
-		AND insert_state = 'done'
 		AND (name SIMILAR TO concat('%', $2::text, '%') OR
 			 description SIMILAR TO concat('%', $2::text, '%') OR
 			 id = $3)`,
@@ -41,7 +41,7 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		if err != nil {
 			return err
 		}
-		art := tgbotapi.NewInlineQueryResultArticle(strconv.FormatInt(id, 10), name, "Shared text: "+description)
+		art := tgbotapi.NewInlineQueryResultArticleHTML(fmt.Sprintf("%d", id), name, "<b>Shared text</b>: "+description)
 		art.Description = description
 		inlineConf.Results = append(inlineConf.Results, art)
 	}

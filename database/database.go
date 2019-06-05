@@ -1,8 +1,8 @@
-package main
+package database
 
 import (
-	"log"
 	"database/sql"
+	"log"
 )
 
 // TxRollback helper funtion to automatically rollback and log issues with rollbacks
@@ -41,17 +41,17 @@ func UpgradeDatabase(db *sql.DB) error {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.user_states (
 		user_id bigint NOT NULL,
 		state user_state DEFAULT 'no_command',
-		CONSTRAINT user_id_pk PRIMARY KEY (user_id)
+		CONSTRAINT user_state_pk PRIMARY KEY (user_id)
 	);`)
 	if err != nil {
 		return err
 	}
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.drafts (
-		user_id bigint NOT NUL,
+		user_id bigint NOT NULL,
 		name varchar NULL,
 		description varchar NULL,
-		CONSTRAINT user_id_pk PRIMARY KEY (user_id)
+		CONSTRAINT draft_pk PRIMARY KEY (user_id)
 	);`)
 	if err != nil {
 		return err

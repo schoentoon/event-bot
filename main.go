@@ -5,6 +5,9 @@ import (
 	"flag"
 	"log"
 
+	"gitlab.schoentoon.com/schoentoon/event-bot/commands"
+	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+
 	_ "github.com/lib/pq"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
@@ -22,7 +25,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = UpgradeDatabase(db)
+	err = database.UpgradeDatabase(db)
 	if err != nil {
 		panic(err)
 	}
@@ -42,25 +45,37 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("Accepting commands")
 
 	for update := range updates {
 		if update.Message != nil {
-			if update.Message.IsCommand() {
-				switch update.Message.Command() {
-				case "newevent":
-					handleNewEvent(db, bot, update.Message)
+			if update.Message.Chat.IsPrivate() == false {
+				continue
+			}
+			state, err := database.GetUserState(db, update.Message.From.ID)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			switch state {
+			case "no_command":
+				if update.Message.IsCommand() {
+					switch update.Message.Command() {
+					case "newevent":
+						commands.HandleNewEventCommand(db, bot, update.Message)
+					}
 				}
-			} else if update.Message.Chat.IsPrivate() {
-				handlePrivateMessage(db, bot, update.Message)
-			} else {
-				log.Printf("Unhandled message %#v", update.Message)
-				edit := tgbotapi.NewEditMessageText(update.Message.Chat.ID, update.Message.MessageID, "penis")
-				bot.Send(edit)
+			case "waiting_for_event_name":
+				commands.HandleNewEventName(db, bot, update.Message)
+			case "waiting_for_description":
+				commands.HandleNewEventDescription(db, bot, update.Message)
 			}
 		} else if update.InlineQuery != nil {
 			handleInlineQuery(db, bot, update.InlineQuery)
 		} else if update.ChosenInlineResult != nil {
 			log.Printf("%#v", update.ChosenInlineResult)
+		} else if update.CallbackQuery != nil {
+			log.Printf("CALLBACK %#v", update.CallbackQuery)
 		}
 		log.Printf("%#v", update)
 	}
