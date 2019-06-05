@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"flag"
 	"log"
+	"sync"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/commands"
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 
 	_ "github.com/lib/pq"
@@ -45,38 +45,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Accepting commands")
 
-	for update := range updates {
-		if update.Message != nil {
-			if update.Message.Chat.IsPrivate() == false {
-				continue
-			}
-			state, err := database.GetUserState(db, update.Message.From.ID)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			switch state {
-			case "no_command":
-				if update.Message.IsCommand() {
-					switch update.Message.Command() {
-					case "newevent":
-						commands.HandleNewEventCommand(db, bot, update.Message)
-					}
-				}
-			case "waiting_for_event_name":
-				commands.HandleNewEventName(db, bot, update.Message)
-			case "waiting_for_description":
-				commands.HandleNewEventDescription(db, bot, update.Message)
-			}
-		} else if update.InlineQuery != nil {
-			handleInlineQuery(db, bot, update.InlineQuery)
-		} else if update.ChosenInlineResult != nil {
-			log.Printf("%#v", update.ChosenInlineResult)
-		} else if update.CallbackQuery != nil {
-			log.Printf("CALLBACK %#v", update.CallbackQuery)
-		}
-		log.Printf("%#v", update)
+	log.Printf("Starting %d workers", cfg.Workers)
+
+	wg := &sync.WaitGroup{}
+	for i := 0; i < cfg.Workers; i++ {
+		wg.Add(1)
+		go worker(wg, db, bot, updates)
 	}
+
+	wg.Wait()
 }
