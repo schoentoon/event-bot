@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . /app
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./cmd/bot/...
 
 # deployment image
 FROM scratch
