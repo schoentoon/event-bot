@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
+
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
@@ -43,6 +45,7 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		}
 		art := tgbotapi.NewInlineQueryResultArticleHTML(fmt.Sprintf("%d", id), name, "<b>Shared text</b>: "+description)
 		art.Description = description
+		art.ReplyMarkup = utils.CreateInlineKeyboard(id)
 		inlineConf.Results = append(inlineConf.Results, art)
 	}
 
