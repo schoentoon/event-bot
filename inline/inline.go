@@ -1,10 +1,10 @@
-package main
+package inline
 
 import (
 	"database/sql"
-	"log"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -13,7 +13,7 @@ import (
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQuery) error {
+func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQuery) error {
 	var idFromQuery int64
 	var err error
 	split := strings.Split(query.Query, "/")
@@ -62,7 +62,7 @@ func handleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 	return nil
 }
 
-func handleChoseInlineResult(db *sql.DB, result *tgbotapi.ChosenInlineResult) error {
+func HandleChoseInlineResult(db *sql.DB, result *tgbotapi.ChosenInlineResult) error {
 	split := strings.Split(result.ResultID, "/")
 	if len(split) < 2 {
 		return errors.New("Split is less than 2, ignoring")
@@ -83,7 +83,7 @@ func handleChoseInlineResult(db *sql.DB, result *tgbotapi.ChosenInlineResult) er
 				(event_id, inline_message_id)
 				VALUES
 				($1, $2)`,
-				eventID, result.InlineMessageID)
+			eventID, result.InlineMessageID)
 		if err != nil {
 			return err
 		}

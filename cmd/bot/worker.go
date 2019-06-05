@@ -7,6 +7,7 @@ import (
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/commands"
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/inline"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
@@ -44,10 +45,9 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 			return commands.HandleNewEventDescription(db, bot, update.Message)
 		}
 	} else if update.InlineQuery != nil {
-		return handleInlineQuery(db, bot, update.InlineQuery)
+		return inline.HandleInlineQuery(db, bot, update.InlineQuery)
 	} else if update.ChosenInlineResult != nil {
-		log.Printf("%#v", update.ChosenInlineResult)
-		return handleChoseInlineResult(db, update.ChosenInlineResult)
+		return inline.HandleChoseInlineResult(db, update.ChosenInlineResult)
 	} else if update.CallbackQuery != nil {
 		log.Printf("CALLBACK %#v", update.CallbackQuery)
 	}
