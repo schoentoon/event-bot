@@ -29,7 +29,8 @@ func ChangeUserStateTx(tx *sql.Tx, userID int, newState string) error {
 		VALUES
 		($1, $2)
 		ON CONFLICT (user_id)
-		DO UPDATE SET state = EXCLUDED.state`, userID, newState)
+		DO UPDATE
+		SET state = EXCLUDED.state`, userID, newState)
 
 	return err
 }
@@ -40,7 +41,8 @@ func ChangeUserState(db *sql.DB, userID int, newState string) error {
 		VALUES
 		($1, $2)
 		ON CONFLICT (user_id)
-		DO UPDATE SET state = EXCLUDED.state`, userID, newState)
+		DO UPDATE
+		SET state = EXCLUDED.state`, userID, newState)
 
 	return err
 }

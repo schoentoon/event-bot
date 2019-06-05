@@ -66,5 +66,20 @@ func UpgradeDatabase(db *sql.DB) error {
 		return err
 	}
 
+	_, err = db.Exec(`CREATE TYPE answers_enum AS ENUM ('yes', 'no', 'maybe')`)
+	if err != nil {
+		log.Printf("%v, continueing anyway..", err)
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.answers (
+		user_id bigint NOT NULL,
+		event_id serial REFERENCES events(id),
+		answer answers_enum NOT NULL,
+		PRIMARY KEY (user_id, event_id)
+	);`)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
