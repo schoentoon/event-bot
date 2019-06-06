@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -50,14 +49,19 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		if err != nil {
 			return err
 		}
-		art := tgbotapi.NewInlineQueryResultArticleHTML(fmt.Sprintf("event/%d", id), name, "<b>Shared text</b>: "+description)
+		rendered, err := utils.FormatEvent(db, id)
+		if err != nil {
+			return err
+		}
+
+		art := tgbotapi.NewInlineQueryResultArticleHTML(fmt.Sprintf("event/%d", id), name, rendered)
 		art.Description = description
 		art.ReplyMarkup = utils.CreateInlineKeyboard(id)
 		inlineConf.Results = append(inlineConf.Results, art)
 	}
 
 	if _, err := bot.AnswerInlineQuery(inlineConf); err != nil {
-		log.Println(err)
+		return err
 	}
 	return nil
 }

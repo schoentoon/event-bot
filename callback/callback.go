@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
@@ -34,6 +35,11 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer string,
 		return err
 	}
 
+	err = utils.InsertUserTx(tx, from)
+	if err != nil {
+		return database.TxRollback(tx, err)
+	}
+
 	_, err = tx.Exec(`INSERT INTO public.answers
 		(user_id, event_id, answer)
 		VALUES
@@ -46,5 +52,10 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer string,
 		return database.TxRollback(tx, err)
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return utils.UpdateExistingMessages(db, bot, eventID)
 }

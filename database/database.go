@@ -71,8 +71,19 @@ func UpgradeDatabase(db *sql.DB) error {
 		log.Printf("%v, continueing anyway..", err)
 	}
 
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.users (
+		id bigint NOT NULL,
+		first_name varchar,
+		last_name varchar,
+		username varchar,
+		PRIMARY KEY (id)
+	)`)
+	if err != nil {
+		return nil
+	}
+
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.answers (
-		user_id bigint NOT NULL,
+		user_id bigint REFERENCES users(id),
 		event_id serial REFERENCES events(id),
 		answer answers_enum NOT NULL,
 		PRIMARY KEY (user_id, event_id)

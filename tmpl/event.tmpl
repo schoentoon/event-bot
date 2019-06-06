@@ -1,0 +1,12 @@
+<b>{{ .Name }}</b>
+
+<i>{{ .Description }}</i>
+
+{{ if .Yes }}<b>Yes ({{ .Yes | len }})</b>
+{{ range $i, $user := .Yes }}<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}</a> {{ end }}{{ $user.FirstName }}{{ $user.LastName }}{{ end }}{{ end }}
+
+{{ if .Maybe }}<b>Maybe ({{ .Maybe | len}})</b>
+{{ range $i, $user := .Maybe }}<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}</a> {{ end }}{{ $user.FirstName }}{{ $user.LastName }}{{ end }}{{ end }}
+
+{{ if .No }}<b>No ({{ .No | len}})</b>
+{{ range $i, $user := .No }}<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}</a> {{ end }}{{ $user.FirstName }}{{ $user.LastName }}{{ end }}{{ end }}

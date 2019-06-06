@@ -18,7 +18,7 @@ func worker(wg *sync.WaitGroup, db *sql.DB, bot *tgbotapi.BotAPI, ch tgbotapi.Up
 	for update := range ch {
 		err := job(update, db, bot)
 		if err != nil {
-			log.Printf("%#v on %#v", err, update)
+			log.Printf("%#v %s on %#v", err, err, update)
 		}
 	}
 }

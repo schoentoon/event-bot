@@ -1,11 +1,11 @@
 package templates
 
 import (
+	"html/template"
 	"log"
 	"path/filepath"
 	"strings"
 	"sync"
-	"text/template"
 )
 
 var cache *template.Template
