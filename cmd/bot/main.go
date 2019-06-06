@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 
 	_ "github.com/lib/pq"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
@@ -17,6 +18,11 @@ func main() {
 	flag.Parse()
 
 	cfg, err := ReadConfig(*cfgfile)
+	if err != nil {
+		panic(err)
+	}
+
+	err = templates.Load(cfg.Templates)
 	if err != nil {
 		panic(err)
 	}

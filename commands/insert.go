@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
@@ -34,9 +35,17 @@ func HandleNewEventCommand(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Messa
 
 	var reply tgbotapi.MessageConfig
 	if err == nil {
-		reply = tgbotapi.NewMessage(msg.Chat.ID, "Created new event, please enter the name for the event. Use /skip to have no name.")
+		rendered, err := templates.Execute("created_new_event.tmpl", nil)
+		if err != nil {
+			return err
+		}
+		reply = tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	} else {
-		reply = tgbotapi.NewMessage(msg.Chat.ID, "Something went wrong while creating the event, please try again later.")
+		rendered, err := templates.Execute("something_went_wrong_try_later.tmpl", nil)
+		if err != nil {
+			return err
+		}
+		reply = tgbotapi.NewMessage(msg.Chat.ID, rendered)
 		log.Printf("Error while creating new event %v", err)
 	}
 
@@ -65,7 +74,11 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 		return tx.Commit()
 	}(db, msg)
 
-	reply := tgbotapi.NewMessage(msg.Chat.ID, "Set name accordingly, please enter description for the event. Use /skip to have no description.")
+	rendered, err := templates.Execute("name_set_enter_description.tmpl", nil)
+	if err != nil {
+		return err
+	}
+	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	reply.ReplyToMessageID = msg.MessageID
 
 	_, err = bot.Send(reply)
@@ -107,7 +120,11 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 		return id, tx.Commit()
 	}(db, msg)
 
-	reply := tgbotapi.NewMessage(msg.Chat.ID, "Congratz! Event created succesfully!")
+	rendered, err := templates.Execute("event_created.tmpl", nil)
+	if err != nil {
+		return err
+	}
+	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonSwitch("Share", fmt.Sprintf("event/%d", eventID)),

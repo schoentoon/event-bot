@@ -15,6 +15,7 @@ type Config struct {
 		Addr string `yaml:"addr"`
 	} `yaml:"postgres"`
 	Workers int `yaml:"workers"`
+	Templates string `yaml:"templates"`
 }
 
 // ReadConfig reads a file into the config structure

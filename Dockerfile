@@ -20,6 +20,6 @@ WORKDIR /bin/
 
 COPY --from=builder /app/app .
 
-VOLUME /app/
+WORKDIR /app/
 
-CMD [ "./app", "-config", "/app/config.yml" ]
+ENTRYPOINT [ "/bin/app" ]

@@ -13,5 +13,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./config.yml:/app/config.yml
+      - ./tmpl/:/app/tmpl/
+    command: [ "-config", "/app/config.yml" ]
     links:
       - db
