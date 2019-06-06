@@ -17,6 +17,10 @@ type Config struct {
 	Postgres struct {
 		Addr string `yaml:"addr"`
 	} `yaml:"postgres"`
+	IDHash struct {
+		Salt      string `yaml:"salt"`
+		MinLength int    `yaml:"minLength"`
+	} `yaml:"idhash"`
 	Workers   int    `yaml:"workers"`
 	Templates string `yaml:"templates"`
 }
@@ -50,6 +54,10 @@ func checkConfig(cfg *Config) error {
 
 	if cfg.Templates == "" {
 		return errors.New("No templates directory configured")
+	}
+
+	if cfg.IDHash.Salt == "" {
+		return errors.New("No salt configured!")
 	}
 
 	return nil

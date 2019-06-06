@@ -2,10 +2,10 @@ package commands
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
@@ -160,7 +160,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonSwitch(templates.Button("button_share.tmpl", nil), fmt.Sprintf("event/%d", eventID)),
+			tgbotapi.NewInlineKeyboardButtonSwitch(templates.Button("button_share.tmpl", nil), idhash.Encode("event", eventID)),
 		),
 	)
 	reply.ReplyMarkup = keyboard

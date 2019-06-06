@@ -8,6 +8,7 @@ import (
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 	"gitlab.schoentoon.com/schoentoon/event-bot/events"
+	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 
 	_ "github.com/lib/pq"
@@ -19,6 +20,11 @@ func main() {
 	flag.Parse()
 
 	cfg, err := ReadConfig(*cfgfile)
+	if err != nil {
+		panic(err)
+	}
+
+	err = idhash.InitHasher(cfg.IDHash.Salt, cfg.IDHash.MinLength)
 	if err != nil {
 		panic(err)
 	}

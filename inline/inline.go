@@ -2,13 +2,10 @@ package inline
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 	"gitlab.schoentoon.com/schoentoon/event-bot/events"
+	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
 	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
@@ -16,13 +13,9 @@ import (
 
 func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQuery) error {
 	var idFromQuery int64
-	var err error
-	split := strings.Split(query.Query, "/")
-	if len(split) == 2 {
-		idFromQuery, err = strconv.ParseInt(split[1], 10, 64)
-		if err != nil {
-			idFromQuery = -1
-		}
+	typ, id, err := idhash.Decode(query.Query)
+	if err == nil && typ == "event" {
+		idFromQuery = id
 	}
 
 	tx, err := db.Begin()
@@ -67,7 +60,7 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 			return database.TxRollback(tx, err)
 		}
 
-		art := tgbotapi.NewInlineQueryResultArticleHTML(fmt.Sprintf("event/%d", id), name, rendered)
+		art := tgbotapi.NewInlineQueryResultArticleHTML(idhash.Encode("event", id), name, rendered)
 		art.Description = description
 		art.ReplyMarkup = utils.CreateInlineKeyboard(id)
 		inlineConf.Results = append(inlineConf.Results, art)
@@ -80,17 +73,13 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 }
 
 func HandleChoseInlineResult(db *sql.DB, result *tgbotapi.ChosenInlineResult) error {
-	split := strings.Split(result.ResultID, "/")
-	if len(split) < 2 {
-		return errors.New("Split is less than 2, ignoring")
+	typ, id, err := idhash.Decode(result.ResultID)
+	if err != nil {
+		return err
 	}
 
-	if split[0] == "event" {
-		eventID, err := strconv.ParseInt(split[1], 10, 64)
-		if err != nil {
-			return err
-		}
-
+	switch typ {
+	case "event":
 		tx, err := db.Begin()
 		if err != nil {
 			return err
@@ -100,7 +89,7 @@ func HandleChoseInlineResult(db *sql.DB, result *tgbotapi.ChosenInlineResult) er
 				(event_id, inline_message_id)
 				VALUES
 				($1, $2)`,
-			eventID, result.InlineMessageID)
+			id, result.InlineMessageID)
 		if err != nil {
 			return err
 		}
