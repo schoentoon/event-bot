@@ -1,7 +1,10 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"os"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -9,12 +12,12 @@ import (
 type Config struct {
 	Telegram struct {
 		Token string `yaml:"token"`
-		Debug bool `yaml:"debug"`
+		Debug bool   `yaml:"debug"`
 	} `yaml:"telegram"`
 	Postgres struct {
 		Addr string `yaml:"addr"`
 	} `yaml:"postgres"`
-	Workers int `yaml:"workers"`
+	Workers   int    `yaml:"workers"`
 	Templates string `yaml:"templates"`
 }
 
@@ -31,5 +34,23 @@ func ReadConfig(file string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = checkConfig(out)
+	if err != nil {
+		return nil, err
+	}
+
 	return out, err
+}
+
+func checkConfig(cfg *Config) error {
+	if cfg.Workers <= 0 {
+		return fmt.Errorf("%d workers configured, needs to be more than 0", cfg.Workers)
+	}
+
+	if cfg.Templates == "" {
+		return errors.New("No templates directory configured")
+	}
+
+	return nil
 }
