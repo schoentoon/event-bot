@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"log"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -33,4 +34,19 @@ func Execute(name string, data interface{}) (string, error) {
 	}
 
 	return b.String(), nil
+}
+
+func Button(name string, data interface{}) string {
+	mutex.RLock()
+	defer mutex.RUnlock()
+
+	var b strings.Builder
+
+	err := cache.ExecuteTemplate(&b, name, data)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+
+	return b.String()
 }

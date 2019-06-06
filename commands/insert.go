@@ -127,7 +127,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonSwitch("Share", fmt.Sprintf("event/%d", eventID)),
+			tgbotapi.NewInlineKeyboardButtonSwitch(templates.Button("button_share.tmpl", nil), fmt.Sprintf("event/%d", eventID)),
 		),
 	)
 	reply.ReplyMarkup = keyboard
