@@ -2,6 +2,7 @@ package templates
 
 import (
 	"html/template"
+	"io/ioutil"
 	"log"
 	"path/filepath"
 	"strings"
@@ -15,9 +16,26 @@ func Load(dir string) (err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	pattern := filepath.Join(dir, "*.tmpl")
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	cache = template.New("")
 
-	cache, err = template.ParseGlob(pattern)
+	for _, file := range files {
+		rawdata, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
+		if err != nil {
+			return err
+		}
+		data := string(rawdata)
+		data = strings.ReplaceAll(data, "\n", "")
+		data = strings.ReplaceAll(data, "\\n", "\n")
+		tmpl := cache.New(file.Name())
+		_, err = tmpl.Parse(data)
+		if err != nil {
+			return err
+		}
+	}
 
 	return err
 }
