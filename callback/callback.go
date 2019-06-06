@@ -40,6 +40,17 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer string,
 		return database.TxRollback(tx, err)
 	}
 
+	row := tx.QueryRow(`SELECT answer
+		FROM public.answers
+		WHERE user_id = $1
+		AND event_id = $2`,
+		from.ID, eventID)
+	var oldAnswer string
+	err = row.Scan(&oldAnswer)
+	if err != nil {
+		oldAnswer = ""
+	}
+
 	_, err = tx.Exec(`INSERT INTO public.answers
 		(user_id, event_id, answer)
 		VALUES
@@ -55,6 +66,11 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer string,
 	err = tx.Commit()
 	if err != nil {
 		return err
+	}
+
+	// if the previous answer is equal, we don't need to go and update all messages
+	if answer == oldAnswer {
+		return nil
 	}
 
 	return utils.UpdateExistingMessages(db, bot, eventID)
