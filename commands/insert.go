@@ -55,6 +55,19 @@ func HandleNewEventCommand(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Messa
 }
 
 func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message) error {
+	if len(msg.Text) == 0 || len(msg.Text) > 128 {
+		rendered, err := templates.Execute("name_too_long.tmpl", nil)
+		if err != nil {
+			return err
+		}
+
+		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
+		reply.ReplyToMessageID = msg.MessageID
+
+		_, err = bot.Send(reply)
+		return err
+	}
+
 	err := func(db *sql.DB, msg *tgbotapi.Message) error {
 		tx, err := db.Begin()
 		if err != nil {
@@ -86,13 +99,33 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 }
 
 func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message) error {
+	if len(msg.Text) == 0 || len(msg.Text) > 512 {
+		rendered, err := templates.Execute("description_too_long.tmpl", nil)
+		if err != nil {
+			return err
+		}
+
+		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
+		reply.ReplyToMessageID = msg.MessageID
+
+		_, err = bot.Send(reply)
+		return err
+	}
+
 	eventID, err := func(db *sql.DB, msg *tgbotapi.Message) (int64, error) {
 		tx, err := db.Begin()
 		if err != nil {
 			return -1, err
 		}
 
-		_, err = tx.Exec(`UPDATE public.drafts SET description = $1 WHERE user_id = $2`, msg.Text, msg.From.ID)
+		text := msg.Text
+		if msg.IsCommand() {
+			if msg.Command() == "skip" {
+				text = ""
+			}
+		}
+
+		_, err = tx.Exec(`UPDATE public.drafts SET description = $1 WHERE user_id = $2`, text, msg.From.ID)
 		if err != nil {
 			return -1, database.TxRollback(tx, err)
 		}
