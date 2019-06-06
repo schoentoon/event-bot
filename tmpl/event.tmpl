@@ -2,20 +2,20 @@
 
 <i>{{ .Description }}</i>\n\n
 
-{{ if .Yes }}<b>Yes ({{ .Yes | len }})</b>\n
+{{ if .Yes }}<b>👍 Yes ({{ .Yes | len }})</b>\n
 {{ range $i, $user := .Yes }}
-<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}</a> {{ end }}{{ $user.FirstName }} {{ $user.LastName }}\n
+<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}{{ end }}</a> {{ $user.FirstName }} {{ $user.LastName }}\n
 {{ end }}\n
 {{ end }}
 
-{{ if .Maybe }}<b>Maybe ({{ .Maybe | len}})</b>\n
+{{ if .Maybe }}<b>🤔 Maybe ({{ .Maybe | len}})</b>\n
 {{ range $i, $user := .Maybe }}
-<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}</a> {{ end }}{{ $user.FirstName }} {{ $user.LastName }}\n
+<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}{{ end }}</a> {{ $user.FirstName }} {{ $user.LastName }}\n
 {{ end }}\n
 {{ end }}
 
-{{ if .No }}<b>No ({{ .No | len}})</b>\n
+{{ if .No }}<b>👎 No ({{ .No | len}})</b>\n
 {{ range $i, $user := .No }}
-<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}</a> {{ end }}{{ $user.FirstName }} {{ $user.LastName }}\n
+<a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}{{ end }}</a> {{ $user.FirstName }} {{ $user.LastName }}\n
 {{ end }}\n
 {{ end }}

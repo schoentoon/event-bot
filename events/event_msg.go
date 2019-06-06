@@ -92,7 +92,7 @@ func UpdateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) err
 		Text: msg,
 	}
 	edit.ReplyMarkup = utils.CreateInlineKeyboard(eventID)
-	edit.ParseMode = "html"
+	edit.ParseMode = "HTML"
 
 	for {
 		var id string
