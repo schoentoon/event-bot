@@ -21,24 +21,6 @@ func InitHasher(salt string, minLength int) (err error) {
 	return err
 }
 
-func typeToInt(typ string) int64 {
-	switch typ {
-	case "event":
-		return 1
-	default:
-		return 0
-	}
-}
-
-func intToType(in int64) string {
-	switch in {
-	case 1:
-		return "event"
-	default:
-		return ""
-	}
-}
-
 func Encode(typ string, id int64) string {
 	out, err := hasher.EncodeInt64([]int64{typeToInt(typ), id})
 	if err != nil {
