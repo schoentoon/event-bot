@@ -17,12 +17,7 @@ func TxRollback(tx *sql.Tx, err error) error {
 
 // UpgradeDatabase fills in the database schema accordingly
 func UpgradeDatabase(db *sql.DB) error {
-	_, err := db.Exec(`CREATE TYPE insert_state AS ENUM ('waiting_for_name', 'waiting_for_description', 'done')`)
-	if err != nil {
-		log.Printf("%v, continueing anyway..", err)
-	}
-
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.events (
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS public.events (
 		id serial NOT NULL,
 		"owner" bigint NOT NULL,
 		name varchar NULL,
@@ -67,7 +62,8 @@ func UpgradeDatabase(db *sql.DB) error {
 		return err
 	}
 
-	_, err = db.Exec(`CREATE TYPE answers_enum AS ENUM ('yes', 'no', 'maybe')`)
+	// this has to match with the fields in idhash/types.go
+	_, err = db.Exec(`CREATE TYPE answers_enum AS ENUM ('VoteYes', 'VoteNo', 'VoteMaybe')`)
 	if err != nil {
 		log.Printf("%v, continueing anyway..", err)
 	}

@@ -7,6 +7,7 @@ require (
 	github.com/lib/pq v1.1.1
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	golang.org/x/tools v0.0.0-20190606174628-0139d5756a7d // indirect
 	gopkg.in/telegram-bot-api.v4 v4.6.4
 	gopkg.in/yaml.v2 v2.2.2
 )

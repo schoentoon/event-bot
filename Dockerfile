@@ -4,11 +4,11 @@ WORKDIR /app
 
 COPY go.mod go.sum /app/
 
-RUN go mod download
+RUN go mod download && go install golang.org/x/tools/cmd/stringer
 
 COPY . /app
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./cmd/bot/...
+RUN go generate ./... && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./cmd/bot/...
 
 # deployment image
 FROM scratch

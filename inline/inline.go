@@ -14,7 +14,7 @@ import (
 func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQuery) error {
 	var idFromQuery int64
 	typ, id, err := idhash.Decode(query.Query)
-	if err == nil && typ == "event" {
+	if err == nil && typ == idhash.Event {
 		idFromQuery = id
 	}
 
@@ -60,7 +60,7 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 			return database.TxRollback(tx, err)
 		}
 
-		art := tgbotapi.NewInlineQueryResultArticleHTML(idhash.Encode("event", id), name, rendered)
+		art := tgbotapi.NewInlineQueryResultArticleHTML(idhash.Encode(idhash.Event, id), name, rendered)
 		art.Description = description
 		art.ReplyMarkup = utils.CreateInlineKeyboard(id)
 		inlineConf.Results = append(inlineConf.Results, art)
@@ -79,7 +79,7 @@ func HandleChoseInlineResult(db *sql.DB, result *tgbotapi.ChosenInlineResult) er
 	}
 
 	switch typ {
-	case "event":
+	case idhash.Event:
 		tx, err := db.Begin()
 		if err != nil {
 			return err

@@ -21,8 +21,8 @@ func InitHasher(salt string, minLength int) (err error) {
 	return err
 }
 
-func Encode(typ string, id int64) string {
-	out, err := hasher.EncodeInt64([]int64{typeToInt(typ), id})
+func Encode(typ HashType, id int64) string {
+	out, err := hasher.EncodeInt64([]int64{int64(typ), id})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,15 +30,15 @@ func Encode(typ string, id int64) string {
 	return out
 }
 
-func Decode(in string) (string, int64, error) {
+func Decode(in string) (HashType, int64, error) {
 	out, err := hasher.DecodeInt64WithError(in)
 	if err != nil {
-		return "", 0, err
+		return Invalid, 0, err
 	}
 
 	if len(out) != 2 {
-		return "", 0, fmt.Errorf("Expected 2 output integers, got %#v", out)
+		return Invalid, 0, fmt.Errorf("Expected 2 output integers, got %#v", out)
 	}
 
-	return intToType(out[0]), out[1], nil
+	return HashType(out[0]), out[1], nil
 }

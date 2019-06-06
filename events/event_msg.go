@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
@@ -54,11 +55,11 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, error) {
 			return "", err
 		}
 		switch answer {
-		case "yes":
+		case idhash.VoteYes.String():
 			event.Yes = append(event.Yes, user)
-		case "maybe":
+		case idhash.VoteMaybe.String():
 			event.Maybe = append(event.Maybe, user)
-		case "no":
+		case idhash.VoteNo.String():
 			event.No = append(event.No, user)
 		}
 	}

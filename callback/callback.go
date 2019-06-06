@@ -2,35 +2,34 @@ package callback
 
 import (
 	"database/sql"
-	"errors"
-	"strconv"
-	"strings"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 	"gitlab.schoentoon.com/schoentoon/event-bot/events"
+	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
 	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func HandleCallback(db *sql.DB, bot *tgbotapi.BotAPI, callback *tgbotapi.CallbackQuery) error {
-	split := strings.Split(callback.Data, "/")
-	if len(split) < 3 {
-		return errors.New("Split is less than 3, ignoring")
+	typ, id, err := idhash.Decode(callback.Data)
+	if err != nil {
+		return err
 	}
 
-	if split[0] == "event" {
-		eventID, err := strconv.ParseInt(split[2], 10, 64)
-		if err != nil {
-			return err
-		}
-		return handleEvent(db, bot, eventID, split[1], callback.From)
+	switch typ {
+	case idhash.VoteYes:
+		fallthrough
+	case idhash.VoteMaybe:
+		fallthrough
+	case idhash.VoteNo:
+		return handleEvent(db, bot, id, typ, callback.From)
 	}
 
 	return nil
 }
 
-func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer string, from *tgbotapi.User) error {
+func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.HashType, from *tgbotapi.User) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -59,13 +58,13 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer string,
 		ON CONFLICT (user_id, event_id)
 		DO UPDATE
 		SET answer = EXCLUDED.answer`,
-		from.ID, eventID, answer)
+		from.ID, eventID, answer.String())
 	if err != nil {
 		return database.TxRollback(tx, err)
 	}
 
 	// if the previous answer is equal, we don't need to go and update all messages
-	if answer != oldAnswer {
+	if answer.String() != oldAnswer {
 		err = events.NeedsUpdate(tx, eventID)
 		if err != nil {
 			return database.TxRollback(tx, err)
