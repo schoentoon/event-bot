@@ -60,6 +60,7 @@ func UpgradeDatabase(db *sql.DB) error {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.inline_messages (
 		event_id serial REFERENCES events(id),
 		inline_message_id varchar NOT NULL,
+		needs_update boolean DEFAULT false,
 		PRIMARY KEY (event_id, inline_message_id)
 	);`)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/events"
 	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
@@ -63,15 +64,13 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer string,
 		return database.TxRollback(tx, err)
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
 	// if the previous answer is equal, we don't need to go and update all messages
-	if answer == oldAnswer {
-		return nil
+	if answer != oldAnswer {
+		err = events.NeedsUpdate(tx, eventID)
+		if err != nil {
+			return database.TxRollback(tx, err)
+		}
 	}
 
-	return utils.UpdateExistingMessages(db, bot, eventID)
+	return tx.Commit()
 }

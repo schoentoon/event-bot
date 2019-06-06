@@ -1,8 +1,8 @@
-package utils
+package events
 
 import (
-	"testing"
 	"log"
+	"testing"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 

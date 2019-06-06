@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/events"
 	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
@@ -23,7 +25,13 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		}
 	}
 
-	rows, err := db.Query(`SELECT id, name, description
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`DECLARE events_cursor CURSOR FOR
+		SELECT id, name, description
 		FROM public.events
 		WHERE "owner" = $1
 		AND (name SIMILAR TO concat('%', $2::text, '%') OR
@@ -31,8 +39,9 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 			 id = $3)`,
 		query.From.ID, query.Query, idFromQuery)
 	if err != nil {
-		return err
+		return database.TxRollback(tx, err)
 	}
+	defer tx.Exec(`CLOSE events_cursor`)
 
 	inlineConf := tgbotapi.InlineConfig{
 		InlineQueryID: query.ID,
@@ -41,17 +50,21 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		Results:       []interface{}{},
 	}
 
-	for rows.Next() {
+	for {
 		var id int64
 		var name string
 		var description string
-		err := rows.Scan(&id, &name, &description)
+		row := tx.QueryRow(`FETCH NEXT FROM events_cursor`)
+		err := row.Scan(&id, &name, &description)
 		if err != nil {
-			return err
+			if err == sql.ErrNoRows {
+				break
+			}
+			return database.TxRollback(tx, err)
 		}
-		rendered, err := utils.FormatEvent(db, id)
+		rendered, err := events.FormatEvent(tx, id)
 		if err != nil {
-			return err
+			return database.TxRollback(tx, err)
 		}
 
 		art := tgbotapi.NewInlineQueryResultArticleHTML(fmt.Sprintf("event/%d", id), name, rendered)
@@ -61,9 +74,9 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 	}
 
 	if _, err := bot.AnswerInlineQuery(inlineConf); err != nil {
-		return err
+		return database.TxRollback(tx, err)
 	}
-	return nil
+	return tx.Commit()
 }
 
 func HandleChoseInlineResult(db *sql.DB, result *tgbotapi.ChosenInlineResult) error {

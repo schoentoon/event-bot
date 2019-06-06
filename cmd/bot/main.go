@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.schoentoon.com/schoentoon/event-bot/events"
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 
 	_ "github.com/lib/pq"
@@ -44,6 +45,8 @@ func main() {
 		log.Println("Enabling Telegram debug mode")
 		bot.Debug = true
 	}
+
+	go events.UpdateLoop(db, bot)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
