@@ -153,20 +153,32 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 		return id, tx.Commit()
 	}(db, msg)
 
-	rendered, err := templates.Execute("event_created.tmpl", nil)
-	if err != nil {
+	if err == nil && eventID > 0 {
+		rendered, err := templates.Execute("event_created.tmpl", nil)
+		if err != nil {
+			return err
+		}
+		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
+		keyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_settings.tmpl", nil), idhash.Encode(idhash.Settings, eventID)),
+				tgbotapi.NewInlineKeyboardButtonSwitch(templates.Button("button_share.tmpl", nil), idhash.Encode(idhash.Event, eventID)),
+			),
+		)
+		reply.ReplyMarkup = keyboard
+		reply.ReplyToMessageID = msg.MessageID
+
+		_, err = bot.Send(reply)
+		return err
+	} else {
+		rendered, err := templates.Execute("something_went_wrong_try_later.tmpl", nil)
+		if err != nil {
+			return err
+		}
+		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
+		reply.ReplyToMessageID = msg.MessageID
+
+		_, err = bot.Send(reply)
 		return err
 	}
-	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_settings.tmpl", nil), idhash.Encode(idhash.Settings, eventID)),
-			tgbotapi.NewInlineKeyboardButtonSwitch(templates.Button("button_share.tmpl", nil), idhash.Encode(idhash.Event, eventID)),
-		),
-	)
-	reply.ReplyMarkup = keyboard
-	reply.ReplyToMessageID = msg.MessageID
-
-	_, err = bot.Send(reply)
-	return err
 }

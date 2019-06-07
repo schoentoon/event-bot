@@ -24,7 +24,7 @@ func InitHasher(salt string, minLength int) (err error) {
 func Encode(typ HashType, id int64) string {
 	out, err := hasher.EncodeInt64([]int64{int64(typ), id})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(typ, id, err)
 	}
 
 	return out

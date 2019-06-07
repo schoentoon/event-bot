@@ -22,4 +22,7 @@ const (
 	ChangeAnswerYesMaybe
 	ChangeAnswerYesNo
 	ChangeAnswerYes
+
+	SettingChangeName
+	SettingChangeDescription
 )

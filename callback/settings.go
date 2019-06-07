@@ -30,6 +30,8 @@ func handleSettings(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *t
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_change_answers.tmpl", nil), idhash.Encode(idhash.SettingChangeAnswers, eventID)),
+			//tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_change_name.tmpl", nil), idhash.Encode(idhash.SettingChangeName, eventID)),
+			//tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_change_description.tmpl", nil), idhash.Encode(idhash.SettingChangeDescription, eventID)),
 		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_back.tmpl", nil), idhash.Encode(idhash.MainMenu, eventID)),
