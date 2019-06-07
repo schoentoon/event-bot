@@ -55,14 +55,14 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 			}
 			return database.TxRollback(tx, err)
 		}
-		rendered, err := events.FormatEvent(tx, id)
+		rendered, event, err := events.FormatEvent(tx, id)
 		if err != nil {
 			return database.TxRollback(tx, err)
 		}
 
 		art := tgbotapi.NewInlineQueryResultArticleHTML(idhash.Encode(idhash.Event, id), name, rendered)
 		art.Description = description
-		art.ReplyMarkup = utils.CreateInlineKeyboard(id)
+		art.ReplyMarkup = utils.CreateInlineKeyboard(event.AnswerMode, id)
 		inlineConf.Results = append(inlineConf.Results, art)
 	}
 

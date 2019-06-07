@@ -1,12 +1,12 @@
 package main
 
 import (
-	"sync"
-	"log"
 	"database/sql"
+	"log"
+	"sync"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/commands"
 	"gitlab.schoentoon.com/schoentoon/event-bot/callback"
+	"gitlab.schoentoon.com/schoentoon/event-bot/commands"
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 	"gitlab.schoentoon.com/schoentoon/event-bot/inline"
 
@@ -50,7 +50,6 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 	} else if update.ChosenInlineResult != nil {
 		return inline.HandleChoseInlineResult(db, update.ChosenInlineResult)
 	} else if update.CallbackQuery != nil {
-		log.Printf("CALLBACK %#v", update.CallbackQuery)
 		return callback.HandleCallback(db, bot, update.CallbackQuery)
 	}
 

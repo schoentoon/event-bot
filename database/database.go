@@ -17,12 +17,19 @@ func TxRollback(tx *sql.Tx, err error) error {
 
 // UpgradeDatabase fills in the database schema accordingly
 func UpgradeDatabase(db *sql.DB) error {
-	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS public.events (
+	// this has to match with the fields in idhash/types.go
+	_, err := db.Exec(`CREATE TYPE answers_setting AS ENUM ('ChangeAnswerYesNoMaybe', 'ChangeAnswerYesMaybe', 'ChangeAnswerYesNo', 'ChangeAnswerYes')`)
+	if err != nil {
+		log.Printf("%v, continueing anyway..", err)
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.events (
 		id serial NOT NULL,
 		"owner" bigint NOT NULL,
 		name varchar NULL,
 		description varchar NULL,
-		CONSTRAINT events_pk PRIMARY KEY (id)
+		answers_options answers_setting DEFAULT 'ChangeAnswerYesNoMaybe',
+		PRIMARY KEY (id)
 	);`)
 	if err != nil {
 		return err
@@ -36,7 +43,7 @@ func UpgradeDatabase(db *sql.DB) error {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.user_states (
 		user_id bigint NOT NULL,
 		state user_state DEFAULT 'no_command',
-		CONSTRAINT user_state_pk PRIMARY KEY (user_id)
+		PRIMARY KEY (user_id)
 	);`)
 	if err != nil {
 		return err
@@ -46,7 +53,7 @@ func UpgradeDatabase(db *sql.DB) error {
 		user_id bigint NOT NULL,
 		name varchar NULL,
 		description varchar NULL,
-		CONSTRAINT draft_pk PRIMARY KEY (user_id)
+		PRIMARY KEY (user_id)
 	);`)
 	if err != nil {
 		return err

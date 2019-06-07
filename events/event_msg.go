@@ -14,20 +14,21 @@ import (
 type Event struct {
 	Name        string
 	Description string
+	AnswerMode  string
 	Yes         []tgbotapi.User
 	No          []tgbotapi.User
 	Maybe       []tgbotapi.User
 }
 
-func FormatEvent(tx *sql.Tx, eventID int64) (string, error) {
-	row := tx.QueryRow(`SELECT name, description
+func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
+	row := tx.QueryRow(`SELECT name, description, answers_options
 		FROM public.events
 		WHERE id = $1`,
 		eventID)
 	var event Event
-	err := row.Scan(&event.Name, &event.Description)
+	err := row.Scan(&event.Name, &event.Description, &event.AnswerMode)
 	if err != nil {
-		return "", err
+		return "", event, err
 	}
 
 	_, err = tx.Exec(`DECLARE answers_cursor CURSOR FOR
@@ -38,7 +39,7 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, error) {
 		WHERE answers.event_id = $1`,
 		eventID)
 	if err != nil {
-		return "", err
+		return "", event, err
 	}
 	defer tx.Exec(`CLOSE answers_cursor`)
 
@@ -52,7 +53,7 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, error) {
 			if err == sql.ErrNoRows {
 				break
 			}
-			return "", err
+			return "", event, err
 		}
 		switch answer {
 		case idhash.VoteYes.String():
@@ -64,16 +65,26 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, error) {
 		}
 	}
 
-	rendered, err := templates.Execute("event.tmpl", event)
-	if err != nil {
-		return "", err
+	switch event.AnswerMode {
+	case idhash.ChangeAnswerYesMaybe.String():
+		event.No = []tgbotapi.User{}
+	case idhash.ChangeAnswerYesNo.String():
+		event.Maybe = []tgbotapi.User{}
+	case idhash.ChangeAnswerYes.String():
+		event.No = []tgbotapi.User{}
+		event.Maybe = []tgbotapi.User{}
 	}
 
-	return rendered, nil
+	rendered, err := templates.Execute("event.tmpl", event)
+	if err != nil {
+		return "", event, err
+	}
+
+	return rendered, event, nil
 }
 
-func UpdateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) error {
-	msg, err := FormatEvent(tx, eventID)
+func updateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) error {
+	msg, event, err := FormatEvent(tx, eventID)
 	if err != nil {
 		return err
 	}
@@ -91,7 +102,7 @@ func UpdateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) err
 	edit := tgbotapi.EditMessageTextConfig{
 		Text: msg,
 	}
-	edit.ReplyMarkup = utils.CreateInlineKeyboard(eventID)
+	edit.ReplyMarkup = utils.CreateInlineKeyboard(event.AnswerMode, eventID)
 	edit.ParseMode = "HTML"
 
 	for {

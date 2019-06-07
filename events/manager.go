@@ -45,7 +45,7 @@ func run(db *sql.DB, bot *tgbotapi.BotAPI) error {
 			}
 			return database.TxRollback(tx, err)
 		}
-		err = UpdateExistingMessages(tx, bot, id)
+		err = updateExistingMessages(tx, bot, id)
 		if err != nil {
 			return database.TxRollback(tx, err)
 		}
