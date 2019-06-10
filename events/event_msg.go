@@ -20,6 +20,10 @@ type Event struct {
 	Maybe       []tgbotapi.User
 }
 
+func FormatEventSettings(tx *sql.Tx, eventID int64) (string, Event, error) {
+	return FormatEvent(tx, eventID)
+}
+
 func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 	row := tx.QueryRow(`SELECT name, description, answers_options
 		FROM public.events
@@ -81,6 +85,29 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 	}
 
 	return rendered, event, nil
+}
+
+func SetSettingsMessageID(db *sql.DB, eventID int64, messageID int) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = SetSettingsMessageIDTx(tx, eventID, messageID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func SetSettingsMessageIDTx(tx *sql.Tx, eventID int64, messageID int) error {
+	_, err := tx.Exec(`UPDATE public.events
+		SET settings_message_id = $1
+		WHERE id = $2`,
+		messageID, eventID)
+
+	return err
 }
 
 func updateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) error {

@@ -18,7 +18,10 @@ func TxRollback(tx *sql.Tx, err error) error {
 // UpgradeDatabase fills in the database schema accordingly
 func UpgradeDatabase(db *sql.DB) error {
 	// this has to match with the fields in idhash/types.go
-	_, err := db.Exec(`CREATE TYPE answers_setting AS ENUM ('ChangeAnswerYesNoMaybe', 'ChangeAnswerYesMaybe', 'ChangeAnswerYesNo', 'ChangeAnswerYes')`)
+	_, err := db.Exec(`CREATE TYPE answers_setting AS ENUM ('ChangeAnswerYesNoMaybe',
+		'ChangeAnswerYesMaybe',
+		'ChangeAnswerYesNo',
+		'ChangeAnswerYes')`)
 	if err != nil {
 		log.Printf("%v, continueing anyway..", err)
 	}
@@ -29,13 +32,17 @@ func UpgradeDatabase(db *sql.DB) error {
 		name varchar NULL,
 		description varchar NULL,
 		answers_options answers_setting DEFAULT 'ChangeAnswerYesNoMaybe',
+		wants_edit boolean DEFAULT false,
+		settings_message_id integer DEFAULT NULL,
 		PRIMARY KEY (id)
 	);`)
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec(`CREATE TYPE user_state AS ENUM ('no_command', 'waiting_for_event_name', 'waiting_for_description')`)
+	_, err = db.Exec(`CREATE TYPE user_state AS ENUM ('no_command',
+		'waiting_for_event_name',
+		'waiting_for_description')`)
 	if err != nil {
 		log.Printf("%v, continueing anyway..", err)
 	}
@@ -70,7 +77,9 @@ func UpgradeDatabase(db *sql.DB) error {
 	}
 
 	// this has to match with the fields in idhash/types.go
-	_, err = db.Exec(`CREATE TYPE answers_enum AS ENUM ('VoteYes', 'VoteNo', 'VoteMaybe')`)
+	_, err = db.Exec(`CREATE TYPE answers_enum AS ENUM ('VoteYes',
+		'VoteNo',
+		'VoteMaybe')`)
 	if err != nil {
 		log.Printf("%v, continueing anyway..", err)
 	}

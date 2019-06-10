@@ -43,3 +43,14 @@ func CreateInlineKeyboard(answersOptions string, eventID int64) *tgbotapi.Inline
 
 	return &keyboard
 }
+
+func CreateEventCreatedKeyboard(eventID int64) *tgbotapi.InlineKeyboardMarkup {
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_settings.tmpl", nil), idhash.Encode(idhash.Settings, eventID)),
+			tgbotapi.NewInlineKeyboardButtonSwitch(templates.Button("button_share.tmpl", nil), idhash.Encode(idhash.Event, eventID)),
+		),
+	)
+
+	return &keyboard
+}

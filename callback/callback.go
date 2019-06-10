@@ -37,6 +37,10 @@ func HandleCallback(db *sql.DB, bot *tgbotapi.BotAPI, callback *tgbotapi.Callbac
 		fallthrough
 	case idhash.ChangeAnswerYes:
 		return handleChangeAnswerPicked(db, bot, id, typ, callback)
+	case idhash.SettingChangeName:
+		return handleChangeEventName(db, bot, id, callback)
+	case idhash.SettingChangeDescription:
+		return handleChangeEventDescription(db, bot, id, callback)
 	}
 
 	return nil

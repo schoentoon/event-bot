@@ -36,13 +36,21 @@ func ChangeUserStateTx(tx *sql.Tx, userID int, newState string) error {
 }
 
 func ChangeUserState(db *sql.DB, userID int, newState string) error {
-	_, err := db.Exec(`INSERT INTO user_states
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`INSERT INTO user_states
 		(user_id, state)
 		VALUES
 		($1, $2)
 		ON CONFLICT (user_id)
 		DO UPDATE
 		SET state = EXCLUDED.state`, userID, newState)
+	if err != nil {
+		return err
+	}
 
-	return err
+	return tx.Commit()
 }
