@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"log"
+	"time"
 )
 
 // TxRollback helper funtion to automatically rollback and log issues with rollbacks
@@ -15,8 +16,18 @@ func TxRollback(tx *sql.Tx, err error) error {
 	return err
 }
 
+func waitForStartup(db *sql.DB) {
+	err := db.Ping()
+	for err != nil {
+		err = db.Ping()
+		time.Sleep(time.Millisecond * 100)
+	}
+}
+
 // UpgradeDatabase fills in the database schema accordingly
 func UpgradeDatabase(db *sql.DB) error {
+	waitForStartup(db)
+
 	// this has to match with the fields in idhash/types.go
 	_, err := db.Exec(`CREATE TYPE answers_setting AS ENUM ('ChangeAnswerYesNoMaybe',
 		'ChangeAnswerYesMaybe',
