@@ -17,6 +17,7 @@ type Event struct {
 	Description string
 	AnswerMode  string
 	When        time.Time
+	Location    string
 	Yes         []tgbotapi.User
 	No          []tgbotapi.User
 	Maybe       []tgbotapi.User
@@ -27,12 +28,12 @@ func FormatEventSettings(tx *sql.Tx, eventID int64) (string, Event, error) {
 }
 
 func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
-	row := tx.QueryRow(`SELECT name, description, answers_options, "when"
+	row := tx.QueryRow(`SELECT name, description, answers_options, "when", location
 		FROM public.events
 		WHERE id = $1`,
 		eventID)
 	var event Event
-	err := row.Scan(&event.Name, &event.Description, &event.AnswerMode, &event.When)
+	err := row.Scan(&event.Name, &event.Description, &event.AnswerMode, &event.When, &event.Location)
 	if err != nil {
 		return "", event, err
 	}

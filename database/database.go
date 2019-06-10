@@ -43,6 +43,7 @@ func UpgradeDatabase(db *sql.DB) error {
 		name varchar NOT NULL,
 		description varchar NOT NULL,
 		"when" timestamp with time zone NOT NULL,
+		location varchar NOT NULL,
 		answers_options answers_setting DEFAULT 'ChangeAnswerYesNoMaybe',
 		wants_edit boolean DEFAULT false,
 		settings_message_id integer DEFAULT NULL,
@@ -55,7 +56,8 @@ func UpgradeDatabase(db *sql.DB) error {
 	_, err = db.Exec(`CREATE TYPE user_state AS ENUM ('no_command',
 		'waiting_for_event_name',
 		'waiting_for_description',
-		'waiting_for_timestamp')`)
+		'waiting_for_timestamp',
+		'waiting_for_location')`)
 	if err != nil {
 		log.Printf("%v, continueing anyway..", err)
 	}
@@ -74,6 +76,7 @@ func UpgradeDatabase(db *sql.DB) error {
 		name varchar NULL,
 		description varchar NULL,
 		"when" timestamp with time zone NULL,
+		location varchar NULL,
 		PRIMARY KEY (user_id)
 	);`)
 	if err != nil {
