@@ -57,7 +57,7 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.
 	return tx.Commit()
 }
 
-func handleChangeEventName(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *tgbotapi.CallbackQuery) error {
+func handleChangeEventProperty(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *tgbotapi.CallbackQuery, newState, tmpl string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func handleChangeEventName(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, call
 		return database.TxRollback(tx, err)
 	}
 
-	err = database.ChangeUserStateTx(tx, callback.From.ID, "waiting_for_event_name")
+	err = database.ChangeUserStateTx(tx, callback.From.ID, newState)
 	if err != nil {
 		return database.TxRollback(tx, err)
 	}
@@ -78,38 +78,7 @@ func handleChangeEventName(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, call
 		return err
 	}
 
-	rendered, err := templates.Execute("change_event_name.tmpl", nil)
-	if err != nil {
-		return err
-	}
-	reply := tgbotapi.NewMessage(int64(callback.From.ID), rendered)
-
-	_, err = bot.Send(reply)
-	return err
-}
-
-func handleChangeEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *tgbotapi.CallbackQuery) error {
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-
-	err = database.EventWantsEdit(tx, eventID, callback.From.ID)
-	if err != nil {
-		return database.TxRollback(tx, err)
-	}
-
-	err = database.ChangeUserStateTx(tx, callback.From.ID, "waiting_for_description")
-	if err != nil {
-		return database.TxRollback(tx, err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
-	rendered, err := templates.Execute("change_event_description.tmpl", nil)
+	rendered, err := templates.Execute(tmpl, nil)
 	if err != nil {
 		return err
 	}

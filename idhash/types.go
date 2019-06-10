@@ -25,4 +25,6 @@ const (
 
 	SettingChangeName
 	SettingChangeDescription
+	SettingChangeTime
+	SettingChangeLocation
 )

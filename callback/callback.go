@@ -38,9 +38,13 @@ func HandleCallback(db *sql.DB, bot *tgbotapi.BotAPI, callback *tgbotapi.Callbac
 	case idhash.ChangeAnswerYes:
 		return handleChangeAnswerPicked(db, bot, id, typ, callback)
 	case idhash.SettingChangeName:
-		return handleChangeEventName(db, bot, id, callback)
+		return handleChangeEventProperty(db, bot, id, callback, "waiting_for_event_name", "change_event_name.tmpl")
 	case idhash.SettingChangeDescription:
-		return handleChangeEventDescription(db, bot, id, callback)
+		return handleChangeEventProperty(db, bot, id, callback, "waiting_for_description", "change_event_description.tmpl")
+	case idhash.SettingChangeTime:
+		return handleChangeEventProperty(db, bot, id, callback, "waiting_for_timestamp", "change_event_timestamp.tmpl")
+	case idhash.SettingChangeLocation:
+		return handleChangeEventProperty(db, bot, id, callback, "waiting_for_location", "change_event_location.tmpl")
 	}
 
 	return nil
