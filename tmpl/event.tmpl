@@ -2,6 +2,8 @@
 
 <i>{{ .Description }}</i>\n\n
 
+{{ .When | date "2006-01-02 15:04" }}\n\n
+
 {{ if .Yes }}<b>👍 Yes ({{ .Yes | len }})</b>\n
 {{ range $i, $user := .Yes }}
 <a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}{{ end }}</a> {{ $user.FirstName }} {{ $user.LastName }}\n

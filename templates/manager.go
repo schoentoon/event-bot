@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/Masterminds/sprig"
 )
 
 var cache *template.Template
@@ -20,7 +22,7 @@ func Load(dir string) (err error) {
 	if err != nil {
 		return err
 	}
-	cache = template.New("")
+	cache = template.New("").Funcs(sprig.FuncMap())
 
 	for _, file := range files {
 		rawdata, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))

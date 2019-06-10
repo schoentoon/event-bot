@@ -3,6 +3,7 @@ package events
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
@@ -15,6 +16,7 @@ type Event struct {
 	Name        string
 	Description string
 	AnswerMode  string
+	When        time.Time
 	Yes         []tgbotapi.User
 	No          []tgbotapi.User
 	Maybe       []tgbotapi.User
@@ -25,12 +27,12 @@ func FormatEventSettings(tx *sql.Tx, eventID int64) (string, Event, error) {
 }
 
 func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
-	row := tx.QueryRow(`SELECT name, description, answers_options
+	row := tx.QueryRow(`SELECT name, description, answers_options, "when"
 		FROM public.events
 		WHERE id = $1`,
 		eventID)
 	var event Event
-	err := row.Scan(&event.Name, &event.Description, &event.AnswerMode)
+	err := row.Scan(&event.Name, &event.Description, &event.AnswerMode, &event.When)
 	if err != nil {
 		return "", event, err
 	}
