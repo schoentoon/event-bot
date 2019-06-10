@@ -40,8 +40,9 @@ func UpgradeDatabase(db *sql.DB) error {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS public.events (
 		id serial NOT NULL,
 		"owner" bigint NOT NULL,
-		name varchar NULL,
-		description varchar NULL,
+		name varchar NOT NULL,
+		description varchar NOT NULL,
+		"when" timestamp with time zone NOT NULL,
 		answers_options answers_setting DEFAULT 'ChangeAnswerYesNoMaybe',
 		wants_edit boolean DEFAULT false,
 		settings_message_id integer DEFAULT NULL,
@@ -53,7 +54,8 @@ func UpgradeDatabase(db *sql.DB) error {
 
 	_, err = db.Exec(`CREATE TYPE user_state AS ENUM ('no_command',
 		'waiting_for_event_name',
-		'waiting_for_description')`)
+		'waiting_for_description',
+		'waiting_for_timestamp')`)
 	if err != nil {
 		log.Printf("%v, continueing anyway..", err)
 	}
@@ -71,6 +73,7 @@ func UpgradeDatabase(db *sql.DB) error {
 		user_id bigint NOT NULL,
 		name varchar NULL,
 		description varchar NULL,
+		"when" timestamp with time zone NULL,
 		PRIMARY KEY (user_id)
 	);`)
 	if err != nil {

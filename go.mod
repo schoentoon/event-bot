@@ -3,6 +3,7 @@ module gitlab.schoentoon.com/schoentoon/event-bot
 go 1.12
 
 require (
+	github.com/araddon/dateparse v0.0.0-20190510211750-d2ba70357e92
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
 	github.com/lib/pq v1.1.1
 	github.com/speps/go-hashids v2.0.0+incompatible

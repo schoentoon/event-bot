@@ -44,6 +44,8 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 			return commands.HandleNewEventName(db, bot, update.Message)
 		case "waiting_for_description":
 			return commands.HandleNewEventDescription(db, bot, update.Message)
+		case "waiting_for_timestamp":
+			return commands.HandleNewEventTimestamp(db, bot, update.Message)
 		}
 	} else if update.InlineQuery != nil {
 		return inline.HandleInlineQuery(db, bot, update.InlineQuery)
