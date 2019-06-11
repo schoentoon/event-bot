@@ -7,6 +7,7 @@ stages:
 test:
   stage: test
   script:
+    - go mod download && go install golang.org/x/tools/cmd/stringer
     - go generate ./...
     - go test -v -race ./...
 
@@ -21,13 +22,14 @@ golangci-lint:
     name: golangci/golangci-lint:latest
     entrypoint: [""]
   script:
-    - go get
+    - go mod download && go install golang.org/x/tools/cmd/stringer
     - go generate ./...
     - golangci-lint run ./...
 
 build:
   stage: build
   script:
+    - go mod download && go install golang.org/x/tools/cmd/stringer
     - go generate ./...
     - go build ./...
 
