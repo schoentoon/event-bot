@@ -34,7 +34,6 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 	if err != nil {
 		return database.TxRollback(tx, err)
 	}
-	defer tx.Exec(`CLOSE events_cursor`)
 
 	inlineConf := tgbotapi.InlineConfig{
 		InlineQueryID: query.ID,
@@ -64,6 +63,11 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 		art.Description = description
 		art.ReplyMarkup = utils.CreateInlineKeyboard(event.AnswerMode, id)
 		inlineConf.Results = append(inlineConf.Results, art)
+	}
+
+	_, err = tx.Exec(`CLOSE events_cursor`)
+	if err != nil {
+		return database.TxRollback(tx, err)
 	}
 
 	if _, err := bot.AnswerInlineQuery(inlineConf); err != nil {

@@ -11,11 +11,6 @@ test:
     - go generate ./...
     - go test -v -race ./...
 
-vet:
-  stage: test
-  script:
-    - go vet ./...
-
 golangci-lint:
   stage: test
   image:

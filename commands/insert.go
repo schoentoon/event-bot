@@ -139,6 +139,9 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 		edit.ParseMode = "HTML"
 
 		_, err = bot.Send(edit)
+		if err != nil {
+			log.Println(err)
+		}
 
 		return true, tx.Commit()
 	}(db, msg)
@@ -244,6 +247,9 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 		edit.ParseMode = "HTML"
 
 		_, err = bot.Send(edit)
+		if err != nil {
+			log.Println(err)
+		}
 
 		return true, tx.Commit()
 	}(db, msg)
@@ -350,6 +356,9 @@ func HandleNewEventTimestamp(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mes
 		edit.ParseMode = "HTML"
 
 		_, err = bot.Send(edit)
+		if err != nil {
+			log.Println(err)
+		}
 
 		return true, tx.Commit()
 	}(db, msg, when)
@@ -428,6 +437,10 @@ func HandleNewEventLocation(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mess
 				}
 
 				rendered, _, err := events.FormatEventSettings(tx, eventID)
+				if err != nil {
+					return database.TxRollback(tx, err)
+				}
+
 				reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 				reply.ReplyMarkup = utils.CreateEventCreatedKeyboard(eventID)
 				reply.ReplyToMessageID = msg.MessageID

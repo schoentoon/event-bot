@@ -10,6 +10,9 @@ func GetUserState(db *sql.DB, userID int) (string, error) {
 	err := row.Scan(&out)
 	if err == sql.ErrNoRows {
 		tx, err := db.Begin()
+		if err != nil {
+			return "", err
+		}
 		row = tx.QueryRow("INSERT INTO user_states (user_id) VALUES ($1) RETURNING state", userID)
 		err = row.Scan(&out)
 		if err != nil {

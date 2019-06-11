@@ -33,7 +33,6 @@ func run(db *sql.DB, bot *tgbotapi.BotAPI) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Exec(`CLOSE event_messages_cursor`)
 
 	for {
 		var id int64
@@ -49,6 +48,11 @@ func run(db *sql.DB, bot *tgbotapi.BotAPI) error {
 		if err != nil {
 			return database.TxRollback(tx, err)
 		}
+	}
+
+	_, err = tx.Exec(`CLOSE event_messages_cursor`)
+	if err != nil {
+		return database.TxRollback(tx, err)
 	}
 
 	return tx.Commit()

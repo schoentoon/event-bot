@@ -48,7 +48,6 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 	if err != nil {
 		return "", event, err
 	}
-	defer tx.Exec(`CLOSE answers_cursor`)
 
 	for {
 		var user tgbotapi.User
@@ -70,6 +69,10 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 		case idhash.VoteNo.String():
 			event.No = append(event.No, user)
 		}
+	}
+	_, err = tx.Exec(`CLOSE answers_cursor`)
+	if err != nil {
+		return "", event, err
 	}
 
 	switch event.AnswerMode {
@@ -127,7 +130,6 @@ func updateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) err
 	if err != nil {
 		return err
 	}
-	defer tx.Exec(`CLOSE inline_message_id_cursor`)
 
 	edit := tgbotapi.EditMessageTextConfig{
 		Text: msg,
@@ -161,7 +163,8 @@ func updateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) err
 		}
 	}
 
-	return nil
+	_, err = tx.Exec(`CLOSE inline_message_id_cursor`)
+	return err
 }
 
 func NeedsUpdate(tx *sql.Tx, eventID int64) error {

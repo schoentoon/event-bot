@@ -25,7 +25,7 @@ func worker(wg *sync.WaitGroup, db *sql.DB, bot *tgbotapi.BotAPI, ch tgbotapi.Up
 
 func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 	if update.Message != nil {
-		if update.Message.Chat.IsPrivate() == false {
+		if !update.Message.Chat.IsPrivate() {
 			return nil
 		}
 		state, err := database.GetUserState(db, update.Message.From.ID)
