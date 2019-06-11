@@ -10,8 +10,8 @@ import (
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-func UpdateLoop(db *sql.DB, bot *tgbotapi.BotAPI) {
-	tick := time.Tick(time.Millisecond * 500)
+func UpdateLoop(db *sql.DB, bot *tgbotapi.BotAPI, interval time.Duration) {
+	tick := time.Tick(interval)
 	for range tick {
 		err := run(db, bot)
 		if err != nil {

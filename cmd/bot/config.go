@@ -1,9 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -15,14 +17,18 @@ type Config struct {
 		Debug bool   `yaml:"debug"`
 	} `yaml:"telegram"`
 	Postgres struct {
-		Addr string `yaml:"addr"`
+		Addr               string        `yaml:"addr"`
+		MaxOpenConnections int           `yaml:"maxOpenConns"`
+		MaxIdleConnections int           `yaml:"maxIdleConns"`
+		MaxConnLifetime    time.Duration `yaml:"maxConnLifetime"`
 	} `yaml:"postgres"`
 	IDHash struct {
 		Salt      string `yaml:"salt"`
 		MinLength int    `yaml:"minLength"`
 	} `yaml:"idhash"`
-	Workers   int    `yaml:"workers"`
-	Templates string `yaml:"templates"`
+	Workers              int           `yaml:"workers"`
+	Templates            string        `yaml:"templates"`
+	EventRefreshInterval time.Duration `yaml:"eventRefreshInterval"`
 }
 
 // ReadConfig reads a file into the config structure
@@ -60,5 +66,21 @@ func checkConfig(cfg *Config) error {
 		return errors.New("No salt configured!")
 	}
 
+	if cfg.EventRefreshInterval == 0 {
+		return errors.New("No event refresh interval set")
+	}
+
 	return nil
+}
+
+func (c *Config) ApplyDatabase(db *sql.DB) {
+	if c.Postgres.MaxConnLifetime > 0 {
+		db.SetConnMaxLifetime(c.Postgres.MaxConnLifetime)
+	}
+	if c.Postgres.MaxIdleConnections > 0 {
+		db.SetMaxIdleConns(c.Postgres.MaxIdleConnections)
+	}
+	if c.Postgres.MaxOpenConnections > 0 {
+		db.SetMaxOpenConns(c.Postgres.MaxOpenConnections)
+	}
 }

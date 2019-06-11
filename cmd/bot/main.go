@@ -38,6 +38,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	cfg.ApplyDatabase(db)
 	err = database.UpgradeDatabase(db)
 	if err != nil {
 		panic(err)
@@ -52,7 +53,7 @@ func main() {
 		bot.Debug = true
 	}
 
-	go events.UpdateLoop(db, bot)
+	go events.UpdateLoop(db, bot, cfg.EventRefreshInterval)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
