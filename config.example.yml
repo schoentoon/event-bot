@@ -3,6 +3,11 @@ telegram:
   debug: true
 postgres:
   addr: "user=events host=db dbname=events password=3v3n5 sslmode=disable"
+prometheus:
+  addr: ":8080"
+idhash:
+  salt: "Change this!"
+  minLength: 10
 workers: 8
 templates: ./tmpl
 eventRefreshInterval: 500ms

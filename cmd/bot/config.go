@@ -26,6 +26,9 @@ type Config struct {
 		Salt      string `yaml:"salt"`
 		MinLength int    `yaml:"minLength"`
 	} `yaml:"idhash"`
+	Prometheus struct {
+		ListenAddr string `yaml:"addr"`
+	} `yaml:"prometheus"`
 	Workers              int           `yaml:"workers"`
 	Templates            string        `yaml:"templates"`
 	EventRefreshInterval time.Duration `yaml:"eventRefreshInterval"`

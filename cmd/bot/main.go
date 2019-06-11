@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"log"
+	"net/http"
 	"sync"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
@@ -12,6 +13,8 @@ import (
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
@@ -42,6 +45,16 @@ func main() {
 	err = database.UpgradeDatabase(db)
 	if err != nil {
 		panic(err)
+	}
+
+	if cfg.Prometheus.ListenAddr != "" {
+		go func(db *sql.DB) {
+			dbCollector := database.NewCollector(db)
+			prometheus.MustRegister(dbCollector)
+			prometheus.MustRegister(prometheus.NewBuildInfoCollector())
+			http.Handle("/metrics", promhttp.Handler())
+			log.Fatal(http.ListenAndServe(cfg.Prometheus.ListenAddr, nil))
+		}(db)
 	}
 
 	bot, err := tgbotapi.NewBotAPI(cfg.Telegram.Token)
