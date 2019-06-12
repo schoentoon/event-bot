@@ -4,14 +4,57 @@ import (
 	"database/sql"
 	"log"
 	"sync"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/callback"
 	"gitlab.schoentoon.com/schoentoon/event-bot/commands"
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 	"gitlab.schoentoon.com/schoentoon/event-bot/inline"
+	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
+
+var (
+	inlineQueryDuration = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name: "bot_inline_query_seconds",
+			Help: "How long does it take to handle inline query requests",
+		},
+		[]string{"error"},
+	)
+	callbackDuration = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name: "bot_callback_seconds",
+			Help: "How long does it take to handle a callback",
+		},
+		[]string{"error"},
+	)
+	messageDuration = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name: "bot_message_seconds",
+			Help: "How long does it take to process a message",
+		},
+		[]string{"error", "user_state"},
+	)
+	commandDuration = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name: "bot_command_seconds",
+			Help: "How long does it take to process a command",
+		},
+		[]string{"error", "command"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(inlineQueryDuration,
+		callbackDuration,
+		messageDuration,
+		commandDuration,
+	)
+}
 
 func worker(wg *sync.WaitGroup, db *sql.DB, bot *tgbotapi.BotAPI, ch tgbotapi.UpdatesChannel) {
 	defer wg.Done()
@@ -28,33 +71,57 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 		if !update.Message.Chat.IsPrivate() {
 			return nil
 		}
+		start := time.Now()
+
 		state, err := database.GetUserState(db, update.Message.From.ID)
 		if err != nil {
 			return err
 		}
+
 		switch state {
 		case "no_command":
 			if update.Message.IsCommand() {
 				switch update.Message.Command() {
 				case "newevent":
-					return commands.HandleNewEventCommand(db, bot, update.Message)
+					err = commands.HandleNewEventCommand(db, bot, update.Message)
 				}
 			}
 		case "waiting_for_event_name":
-			return commands.HandleNewEventName(db, bot, update.Message)
+			err = commands.HandleNewEventName(db, bot, update.Message)
 		case "waiting_for_description":
-			return commands.HandleNewEventDescription(db, bot, update.Message)
+			err = commands.HandleNewEventDescription(db, bot, update.Message)
 		case "waiting_for_timestamp":
-			return commands.HandleNewEventTimestamp(db, bot, update.Message)
+			err = commands.HandleNewEventTimestamp(db, bot, update.Message)
 		case "waiting_for_location":
-			return commands.HandleNewEventLocation(db, bot, update.Message)
+			err = commands.HandleNewEventLocation(db, bot, update.Message)
 		}
+
+		took := time.Now().Sub(start)
+		if state == "no_command" {
+			if err != nil {
+				commandDuration.WithLabelValues(err.Error(), update.Message.Command()).Observe(float64(took) / float64(time.Second))
+			} else {
+				commandDuration.WithLabelValues("", update.Message.Command()).Observe(float64(took) / float64(time.Second))
+			}
+		} else {
+			if err != nil {
+				messageDuration.WithLabelValues(err.Error(), state).Observe(float64(took) / float64(time.Second))
+			} else {
+				messageDuration.WithLabelValues("", state).Observe(float64(took) / float64(time.Second))
+			}
+		}
+		return err
+
 	} else if update.InlineQuery != nil {
-		return inline.HandleInlineQuery(db, bot, update.InlineQuery)
+		return utils.HandleSummary(inlineQueryDuration, func() error {
+			return inline.HandleInlineQuery(db, bot, update.InlineQuery)
+		})
 	} else if update.ChosenInlineResult != nil {
 		return inline.HandleChoseInlineResult(db, update.ChosenInlineResult)
 	} else if update.CallbackQuery != nil {
-		return callback.HandleCallback(db, bot, update.CallbackQuery)
+		return utils.HandleSummary(callbackDuration, func() error {
+			return callback.HandleCallback(db, bot, update.CallbackQuery)
+		})
 	}
 
 	return nil
