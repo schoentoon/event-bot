@@ -102,7 +102,7 @@ func handleChangeAnswerPicked(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, t
 	}
 
 	answer := tgbotapi.NewCallback(callback.ID, rendered)
-	_, err = bot.AnswerCallbackQuery(answer)
+	_, err = utils.AnswerCallbackQuery(bot, answer)
 	if err != nil {
 		return err
 	}
