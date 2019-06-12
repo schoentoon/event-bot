@@ -6,7 +6,7 @@
 
 {{ .Location }}\n\n
 
-{{ if .Yes }}<b>👍 Yes ({{ .Yes | len }})</b>\n
+{{ if .Yes }}<b>👍 Yes ({{ .YesCount }})</b>\n
 {{ range $i, $user := .Yes }}
 <a href="tg://user?id={{ $user.ID }}">{{ if $user.UserName }}@{{ $user.UserName }}{{ end }}</a> {{ $user.FirstName }} {{ $user.LastName }} {{ if $user.Attendees }}<b>(+{{ $user.Attendees }})</b>{{ end }}\n
 {{ end }}\n

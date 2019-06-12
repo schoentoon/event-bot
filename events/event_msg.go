@@ -27,6 +27,7 @@ type Event struct {
 	When        time.Time
 	Location    string
 	Yes         []Vote
+	YesCount    int
 	No          []Vote
 	Maybe       []Vote
 }
@@ -72,6 +73,7 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 		switch answer {
 		case idhash.VoteYes.String():
 			event.Yes = append(event.Yes, user)
+			event.YesCount += user.Attendees + 1
 		case idhash.VoteMaybe.String():
 			event.Maybe = append(event.Maybe, user)
 		case idhash.VoteNo.String():
