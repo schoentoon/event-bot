@@ -12,13 +12,13 @@ import (
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.HashType, from *tgbotapi.User) error {
+func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.HashType, callback *tgbotapi.CallbackQuery) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 
-	err = utils.InsertUserTx(tx, from)
+	err = utils.InsertUserTx(tx, callback.From)
 	if err != nil {
 		return database.TxRollback(tx, err)
 	}
@@ -27,7 +27,7 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.
 		FROM public.answers
 		WHERE user_id = $1
 		AND event_id = $2`,
-		from.ID, eventID)
+		callback.From.ID, eventID)
 	var oldAnswer string
 	err = row.Scan(&oldAnswer)
 	if err != nil {
@@ -41,7 +41,7 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.
 		ON CONFLICT (user_id, event_id)
 		DO UPDATE
 		SET answer = EXCLUDED.answer`,
-		from.ID, eventID, answer.String())
+		callback.From.ID, eventID, answer.String())
 	if err != nil {
 		return database.TxRollback(tx, err)
 	}
@@ -54,7 +54,26 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.
 		}
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	var rendered string
+	switch answer {
+	case idhash.VoteYes:
+		rendered, err = templates.Execute("ack_yes_vote.tmpl", nil)
+	case idhash.VoteMaybe:
+		rendered, err = templates.Execute("ack_maybe_vote.tmpl", nil)
+	case idhash.VoteNo:
+		rendered, err = templates.Execute("ack_no_vote.tmpl", nil)
+	default:
+		return nil
+	}
+
+	reply := tgbotapi.NewCallback(callback.ID, rendered)
+	_, err = utils.AnswerCallbackQuery(bot, reply)
+	return err
 }
 
 func handleChangeEventProperty(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *tgbotapi.CallbackQuery, newState, tmpl string) error {
