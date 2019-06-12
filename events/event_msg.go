@@ -149,7 +149,7 @@ func updateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) err
 		}
 
 		edit.InlineMessageID = id
-		_, err = bot.Send(edit)
+		_, err = utils.Send(bot, edit)
 		if err != nil {
 			log.Println(err)
 		}

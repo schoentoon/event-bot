@@ -84,6 +84,6 @@ func handleChangeEventProperty(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, 
 	}
 	reply := tgbotapi.NewMessage(int64(callback.From.ID), rendered)
 
-	_, err = bot.Send(reply)
+	_, err = utils.Send(bot, reply)
 	return err
 }

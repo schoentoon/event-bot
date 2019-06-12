@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/events"
+	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 
@@ -22,7 +23,7 @@ func handleMainMenu(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *t
 
 	edit := tgbotapi.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, keyboard)
 
-	_, err := bot.Send(edit)
+	_, err := utils.Send(bot, edit)
 	return err
 }
 
@@ -44,7 +45,7 @@ func handleSettings(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *t
 
 	edit := tgbotapi.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, keyboard)
 
-	_, err := bot.Send(edit)
+	_, err := utils.Send(bot, edit)
 	return err
 }
 
@@ -66,7 +67,7 @@ func handleChangeAnswers(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callba
 
 	edit := tgbotapi.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, keyboard)
 
-	_, err := bot.Send(edit)
+	_, err := utils.Send(bot, edit)
 	return err
 }
 

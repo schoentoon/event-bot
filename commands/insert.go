@@ -53,7 +53,7 @@ func HandleNewEventCommand(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Messa
 	}
 
 	reply.ReplyToMessageID = msg.MessageID
-	_, err = bot.Send(reply)
+	_, err = utils.Send(bot, reply)
 	return err
 }
 
@@ -67,7 +67,7 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 		reply.ReplyToMessageID = msg.MessageID
 
-		_, err = bot.Send(reply)
+		_, err = utils.Send(bot, reply)
 		return err
 	}
 
@@ -138,7 +138,7 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 		edit.ReplyMarkup = utils.CreateEventCreatedKeyboard(eventID)
 		edit.ParseMode = "HTML"
 
-		_, err = bot.Send(edit)
+		_, err = utils.Send(bot, edit)
 		if err != nil {
 			log.Println(err)
 		}
@@ -161,7 +161,7 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	reply.ReplyToMessageID = msg.MessageID
 
-	_, err = bot.Send(reply)
+	_, err = utils.Send(bot, reply)
 	return err
 }
 
@@ -175,7 +175,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 		reply.ReplyToMessageID = msg.MessageID
 
-		_, err = bot.Send(reply)
+		_, err = utils.Send(bot, reply)
 		return err
 	}
 
@@ -246,7 +246,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 		edit.ReplyMarkup = utils.CreateEventCreatedKeyboard(eventID)
 		edit.ParseMode = "HTML"
 
-		_, err = bot.Send(edit)
+		_, err = utils.Send(bot, edit)
 		if err != nil {
 			log.Println(err)
 		}
@@ -269,7 +269,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	reply.ReplyToMessageID = msg.MessageID
 
-	_, err = bot.Send(reply)
+	_, err = utils.Send(bot, reply)
 	return err
 }
 
@@ -284,7 +284,7 @@ func HandleNewEventTimestamp(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mes
 		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 		reply.ReplyToMessageID = msg.MessageID
 
-		_, err = bot.Send(reply)
+		_, err = utils.Send(bot, reply)
 		return err
 	}
 
@@ -355,7 +355,7 @@ func HandleNewEventTimestamp(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mes
 		edit.ReplyMarkup = utils.CreateEventCreatedKeyboard(eventID)
 		edit.ParseMode = "HTML"
 
-		_, err = bot.Send(edit)
+		_, err = utils.Send(bot, edit)
 		if err != nil {
 			log.Println(err)
 		}
@@ -378,7 +378,7 @@ func HandleNewEventTimestamp(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mes
 	reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	reply.ReplyToMessageID = msg.MessageID
 
-	_, err = bot.Send(reply)
+	_, err = utils.Send(bot, reply)
 	return err
 }
 
@@ -392,7 +392,7 @@ func HandleNewEventLocation(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mess
 		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 		reply.ReplyToMessageID = msg.MessageID
 
-		_, err = bot.Send(reply)
+		_, err = utils.Send(bot, reply)
 		return err
 	}
 
@@ -446,7 +446,7 @@ func HandleNewEventLocation(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mess
 				reply.ReplyToMessageID = msg.MessageID
 				reply.ParseMode = "HTML"
 
-				m, err := bot.Send(reply)
+				m, err := utils.Send(bot, reply)
 				if err != nil {
 					return database.TxRollback(tx, err)
 				}
@@ -503,7 +503,7 @@ func HandleNewEventLocation(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mess
 		edit.ReplyMarkup = utils.CreateEventCreatedKeyboard(eventID)
 		edit.ParseMode = "HTML"
 
-		_, err = bot.Send(edit)
+		_, err = utils.Send(bot, edit)
 
 		return err
 	}(db, msg, where)
@@ -516,7 +516,7 @@ func HandleNewEventLocation(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mess
 		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
 		reply.ReplyToMessageID = msg.MessageID
 
-		_, err = bot.Send(reply)
+		_, err = utils.Send(bot, reply)
 		return err
 	}
 
