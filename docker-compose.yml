@@ -22,7 +22,6 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     ports:
       - "9090:9090"
@@ -30,3 +29,13 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     links:
       - bot
+      - postgres_exporter
+
+  postgres_exporter:
+    image: wrouesnel/postgres_exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://events:3v3n5@db:5432/events?sslmode=disable"
+      PG_EXPORTER_DISABLE_SETTINGS_METRICS: "true"
+    links:
+      - db
