@@ -13,15 +13,16 @@ import (
 )
 
 func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.HashType, callback *tgbotapi.CallbackQuery) error {
-	err := func() error {
+	plusone, err := func() (bool, error) {
+		plusone := false
 		tx, err := db.Begin()
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		err = utils.InsertUserTx(tx, callback.From)
 		if err != nil {
-			return database.TxRollback(tx, err)
+			return false, database.TxRollback(tx, err)
 		}
 
 		row := tx.QueryRow(`SELECT answer
@@ -34,28 +35,38 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.
 		if err != nil {
 			oldAnswer = ""
 		}
-
-		_, err = tx.Exec(`INSERT INTO public.answers
-			(user_id, event_id, answer)
-			VALUES
-			($1, $2, $3)
-			ON CONFLICT (user_id, event_id)
-			DO UPDATE
-			SET answer = EXCLUDED.answer`,
-			callback.From.ID, eventID, answer.String())
-		if err != nil {
-			return database.TxRollback(tx, err)
-		}
-
-		// if the previous answer is equal, we don't need to go and update all messages
-		if answer.String() != oldAnswer {
-			err = events.NeedsUpdate(tx, eventID)
+		if answer == idhash.VoteYes && answer.String() == oldAnswer {
+			_, err = tx.Exec(`UPDATE public.answers
+				SET attendees = attendees + 1
+				WHERE event_id = $1`,
+				eventID)
 			if err != nil {
-				return database.TxRollback(tx, err)
+				return false, database.TxRollback(tx, err)
 			}
+			plusone = true
+		} else if answer.String() != oldAnswer {
+			_, err = tx.Exec(`INSERT INTO public.answers
+				(user_id, event_id, answer)
+				VALUES
+				($1, $2, $3)
+				ON CONFLICT (user_id, event_id)
+				DO UPDATE
+				SET answer = EXCLUDED.answer,
+				attendees = 0`,
+				callback.From.ID, eventID, answer.String())
+			if err != nil {
+				return false, database.TxRollback(tx, err)
+			}
+		} else {
+			return false, tx.Commit()
 		}
 
-		return tx.Commit()
+		err = events.NeedsUpdate(tx, eventID)
+		if err != nil {
+			return false, database.TxRollback(tx, err)
+		}
+
+		return plusone, tx.Commit()
 	}()
 
 	var rendered string
@@ -64,7 +75,7 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.
 	} else {
 		switch answer {
 		case idhash.VoteYes:
-			rendered, err = templates.Execute("ack_yes_vote.tmpl", nil)
+			rendered, err = templates.Execute("ack_yes_vote.tmpl", !plusone)
 		case idhash.VoteMaybe:
 			rendered, err = templates.Execute("ack_maybe_vote.tmpl", nil)
 		case idhash.VoteNo:

@@ -12,15 +12,23 @@ import (
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
+type Vote struct {
+	ID        int
+	FirstName string
+	LastName  string
+	UserName  string
+	Attendees int
+}
+
 type Event struct {
 	Name        string
 	Description string
 	AnswerMode  string
 	When        time.Time
 	Location    string
-	Yes         []tgbotapi.User
-	No          []tgbotapi.User
-	Maybe       []tgbotapi.User
+	Yes         []Vote
+	No          []Vote
+	Maybe       []Vote
 }
 
 func FormatEventSettings(tx *sql.Tx, eventID int64) (string, Event, error) {
@@ -39,7 +47,7 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 	}
 
 	_, err = tx.Exec(`DECLARE answers_cursor CURSOR FOR
-		SELECT id, first_name, last_name, username, answer
+		SELECT id, first_name, last_name, username, attendees, answer
 		FROM public.users
 		INNER JOIN public.answers
 		ON users.id = answers.user_id
@@ -50,11 +58,11 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 	}
 
 	for {
-		var user tgbotapi.User
+		var user Vote
 		var answer string
 
 		row := tx.QueryRow(`FETCH NEXT FROM answers_cursor`)
-		err = row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.UserName, &answer)
+		err = row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.UserName, &user.Attendees, &answer)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				break
@@ -77,12 +85,12 @@ func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
 
 	switch event.AnswerMode {
 	case idhash.ChangeAnswerYesMaybe.String():
-		event.No = []tgbotapi.User{}
+		event.No = []Vote{}
 	case idhash.ChangeAnswerYesNo.String():
-		event.Maybe = []tgbotapi.User{}
+		event.Maybe = []Vote{}
 	case idhash.ChangeAnswerYes.String():
-		event.No = []tgbotapi.User{}
-		event.Maybe = []tgbotapi.User{}
+		event.No = []Vote{}
+		event.Maybe = []Vote{}
 	}
 
 	rendered, err := templates.Execute("event.tmpl", event)

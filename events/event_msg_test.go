@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
-
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func init() {
@@ -20,14 +18,15 @@ func TestEvenTemplate(t *testing.T) {
 	var event Event
 	event.Name = "Event name"
 	event.Description = "Event description"
-	var user tgbotapi.User
+	var user Vote
 	user.ID = 1337
 	user.FirstName = "First name"
 	user.LastName = "Last name"
 	user.UserName = "User name"
-	event.Yes = []tgbotapi.User{user}
-	event.Maybe = []tgbotapi.User{user}
-	event.No = []tgbotapi.User{user}
+	user.Attendees = 1
+	event.Yes = []Vote{user}
+	event.Maybe = []Vote{user}
+	event.No = []Vote{user}
 
 	_, err := templates.Execute("event.tmpl", event)
 	if err != nil {

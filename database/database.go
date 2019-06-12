@@ -116,6 +116,7 @@ func UpgradeDatabase(db *sql.DB) error {
 		user_id bigint REFERENCES users(id),
 		event_id serial REFERENCES events(id),
 		answer answers_enum NOT NULL,
+		attendees smallint DEFAULT 0,
 		PRIMARY KEY (user_id, event_id)
 	);`)
 	if err != nil {
