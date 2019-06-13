@@ -73,6 +73,11 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 		}
 		start := time.Now()
 
+		_, err := utils.InsertUser(db, update.Message.From)
+		if err != nil {
+			return err
+		}
+
 		state, err := database.GetUserState(db, update.Message.From.ID)
 		if err != nil {
 			return err

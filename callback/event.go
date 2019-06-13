@@ -28,7 +28,7 @@ func handleEventVote(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idh
 			return action, err
 		}
 
-		err = utils.InsertUserTx(tx, callback.From)
+		_, err = utils.InsertUserTx(tx, callback.From)
 		if err != nil {
 			return Invalid, database.TxRollback(tx, err)
 		}
