@@ -22,7 +22,7 @@ func HandleCallback(db *sql.DB, bot *tgbotapi.BotAPI, callback *tgbotapi.Callbac
 	case idhash.VoteMaybe:
 		fallthrough
 	case idhash.VoteNo:
-		return handleEvent(db, bot, id, typ, callback)
+		return handleEventVote(db, bot, id, typ, callback)
 	case idhash.MainMenu:
 		return handleMainMenu(db, bot, id, callback)
 	case idhash.Settings:

@@ -12,38 +12,66 @@ import (
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.HashType, callback *tgbotapi.CallbackQuery) error {
-	plusone, err := func() (bool, error) {
-		plusone := false
+func handleEventVote(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.HashType, callback *tgbotapi.CallbackQuery) error {
+	type voteAction int8
+	const (
+		Invalid voteAction = iota
+		Voted
+		PlusOne
+		UndidVote
+	)
+
+	action, err := func() (voteAction, error) {
+		action := Invalid
 		tx, err := db.Begin()
 		if err != nil {
-			return false, err
+			return action, err
 		}
 
 		err = utils.InsertUserTx(tx, callback.From)
 		if err != nil {
-			return false, database.TxRollback(tx, err)
+			return Invalid, database.TxRollback(tx, err)
 		}
 
-		row := tx.QueryRow(`SELECT answer
+		var options string
+		row := tx.QueryRow(`SELECT answers_options
+			FROM public.events
+			WHERE id = $1`,
+			eventID)
+		err = row.Scan(&options)
+		if err != nil {
+			return Invalid, database.TxRollback(tx, err)
+		}
+
+		var oldAnswer string
+		row = tx.QueryRow(`SELECT answer
 			FROM public.answers
 			WHERE user_id = $1
 			AND event_id = $2`,
 			callback.From.ID, eventID)
-		var oldAnswer string
 		err = row.Scan(&oldAnswer)
 		if err != nil {
 			oldAnswer = ""
 		}
-		if answer == idhash.VoteYes && answer.String() == oldAnswer {
+
+		if answer == idhash.VoteYes && answer.String() == oldAnswer && options != idhash.ChangeAnswerYes.String() {
 			_, err = tx.Exec(`UPDATE public.answers
 				SET attendees = attendees + 1
 				WHERE event_id = $1`,
 				eventID)
 			if err != nil {
-				return false, database.TxRollback(tx, err)
+				return Invalid, database.TxRollback(tx, err)
 			}
-			plusone = true
+			action = PlusOne
+		} else if answer.String() == oldAnswer {
+			_, err = tx.Exec(`DELETE FROM public.answers
+				WHERE user_id = $1
+				AND event_id = $2`,
+				callback.From.ID, eventID)
+			if err != nil {
+				return Invalid, database.TxRollback(tx, err)
+			}
+			action = UndidVote
 		} else if answer.String() != oldAnswer {
 			_, err = tx.Exec(`INSERT INTO public.answers
 				(user_id, event_id, answer)
@@ -55,33 +83,41 @@ func handleEvent(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idhash.
 				attendees = 0`,
 				callback.From.ID, eventID, answer.String())
 			if err != nil {
-				return false, database.TxRollback(tx, err)
+				return Invalid, database.TxRollback(tx, err)
 			}
+			action = Voted
 		} else {
-			return false, tx.Commit()
+			return Invalid, tx.Commit()
 		}
 
 		err = events.NeedsUpdate(tx, eventID)
 		if err != nil {
-			return false, database.TxRollback(tx, err)
+			return Invalid, database.TxRollback(tx, err)
 		}
 
-		return plusone, tx.Commit()
+		return action, tx.Commit()
 	}()
 
 	var rendered string
 	if err != nil {
 		rendered, err = templates.Execute("something_went_wrong_try_later.tmpl", nil)
 	} else {
-		switch answer {
-		case idhash.VoteYes:
-			rendered, err = templates.Execute("ack_yes_vote.tmpl", !plusone)
-		case idhash.VoteMaybe:
-			rendered, err = templates.Execute("ack_maybe_vote.tmpl", nil)
-		case idhash.VoteNo:
-			rendered, err = templates.Execute("ack_no_vote.tmpl", nil)
-		default:
-			return nil
+		switch action {
+		case PlusOne:
+			fallthrough
+		case Voted:
+			switch answer {
+			case idhash.VoteYes:
+				rendered, err = templates.Execute("ack_yes_vote.tmpl", action != PlusOne)
+			case idhash.VoteMaybe:
+				rendered, err = templates.Execute("ack_maybe_vote.tmpl", nil)
+			case idhash.VoteNo:
+				rendered, err = templates.Execute("ack_no_vote.tmpl", nil)
+			default:
+				return nil
+			}
+		case UndidVote:
+			rendered, err = templates.Execute("ack_removed_vote.tmpl", nil)
 		}
 	}
 	if err != nil {
