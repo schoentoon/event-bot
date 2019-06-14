@@ -12,6 +12,7 @@ require (
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/lib/pq v1.1.1
+	github.com/lopezator/migrator v0.1.0
 	github.com/prometheus/client_golang v0.9.4
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
