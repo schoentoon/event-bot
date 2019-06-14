@@ -67,7 +67,7 @@ func AnswerCallbackQuery(bot *tgbotapi.BotAPI, msg tgbotapi.CallbackConfig) (r t
 
 	r, err = bot.AnswerCallbackQuery(msg)
 
-	took := time.Now().Sub(start)
+	took := time.Since(start)
 
 	if err != nil {
 		tgAnswerCallbackQuery.WithLabelValues(err.Error()).Observe(float64(took) / float64(time.Second))
