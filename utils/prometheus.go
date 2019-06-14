@@ -35,7 +35,7 @@ func init() {
 func HandleSummary(summary *prometheus.SummaryVec, f func() error) error {
 	start := time.Now()
 	err := f()
-	took := time.Now().Sub(start)
+	took := time.Since(start)
 
 	if err != nil {
 		summary.WithLabelValues(err.Error()).Observe(float64(took) / float64(time.Second))
@@ -51,7 +51,7 @@ func Send(bot *tgbotapi.BotAPI, msg tgbotapi.Chattable) (m tgbotapi.Message, err
 
 	m, err = bot.Send(msg)
 
-	took := time.Now().Sub(start)
+	took := time.Since(start)
 
 	if err != nil {
 		tgSendDuration.WithLabelValues(err.Error()).Observe(float64(took) / float64(time.Second))

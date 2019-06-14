@@ -46,6 +46,9 @@ func InsertUserTx(tx *sql.Tx, user *tgbotapi.User) (bool, error) {
 		last_name = EXCLUDED.last_name,
 		username = EXCLUDED.username`,
 		user.ID, user.FirstName, user.LastName, user.UserName)
+	if err != nil {
+		return i != 1, err
+	}
 
 	_, err = tx.Exec(`UPDATE inline_messages
 		SET needs_update = true

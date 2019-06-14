@@ -101,7 +101,7 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 			err = commands.HandleNewEventLocation(db, bot, update.Message)
 		}
 
-		took := time.Now().Sub(start)
+		took := time.Since(start)
 		if state == "no_command" {
 			if err != nil {
 				commandDuration.WithLabelValues(err.Error(), update.Message.Command()).Observe(float64(took) / float64(time.Second))
