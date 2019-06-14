@@ -13,8 +13,9 @@ import (
 // Config structure of the config file
 type Config struct {
 	Telegram struct {
-		Token string `yaml:"token"`
-		Debug bool   `yaml:"debug"`
+		Token  string `yaml:"token"`
+		Debug  bool   `yaml:"debug"`
+		Buffer int    `yaml:"buffer"`
 	} `yaml:"telegram"`
 	Postgres struct {
 		Addr               string        `yaml:"addr"`
@@ -71,6 +72,10 @@ func checkConfig(cfg *Config) error {
 
 	if cfg.EventRefreshInterval == 0 {
 		return errors.New("No event refresh interval set")
+	}
+
+	if cfg.Telegram.Buffer == 0 {
+		return errors.New("No Telegram buffer size set")
 	}
 
 	return nil

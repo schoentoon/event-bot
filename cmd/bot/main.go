@@ -5,7 +5,10 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 	"gitlab.schoentoon.com/schoentoon/event-bot/events"
@@ -61,6 +64,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	bot.Buffer = cfg.Telegram.Buffer
 	if cfg.Telegram.Debug {
 		log.Println("Enabling Telegram debug mode")
 		bot.Debug = true
@@ -82,6 +86,14 @@ func main() {
 		wg.Add(1)
 		go worker(wg, db, bot, updates)
 	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	// wait for a SIGINT or SIGTERM
+	<-c
+
+	bot.StopReceivingUpdates()
 
 	wg.Wait()
 }

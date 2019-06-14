@@ -26,7 +26,7 @@ func waitForStartup(db *sql.DB) {
 	}
 }
 
-func initMigrator() (*migrator.Migrator) {
+func initMigrator() *migrator.Migrator {
 	return migrator.New(
 		&migrator.Migration{
 			Name: "Create answers_settings ENUM",
