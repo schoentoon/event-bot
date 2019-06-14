@@ -12,11 +12,10 @@ require (
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/lib/pq v1.1.1
-	github.com/lopezator/migrator v0.1.0
 	github.com/prometheus/client_golang v0.9.4
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
-	golang.org/x/tools v0.0.0-20190606174628-0139d5756a7d // indirect
+	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
 	gopkg.in/telegram-bot-api.v4 v4.6.4
 	gopkg.in/yaml.v2 v2.2.2
 )

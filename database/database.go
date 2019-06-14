@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"time"
-
-	"github.com/lopezator/migrator"
 )
 
 // TxRollback helper funtion to automatically rollback and log issues with rollbacks
@@ -26,9 +24,9 @@ func waitForStartup(db *sql.DB) {
 	}
 }
 
-func initMigrator() *migrator.Migrator {
-	return migrator.New(
-		&migrator.Migration{
+func initMigrator() *Migrator {
+	return New(
+		&Migration{
 			Name: "Create answers_settings ENUM",
 			Func: func(tx *sql.Tx) error {
 				// this has to match with the fields in idhash/types.go
@@ -40,7 +38,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create events table",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
@@ -59,7 +57,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create user_state ENUM",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
@@ -71,7 +69,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create user_states table",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
@@ -83,7 +81,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create drafts table",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
@@ -98,7 +96,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create inline_messages table",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
@@ -111,7 +109,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create answers ENUM",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
@@ -122,7 +120,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create users table",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
@@ -136,7 +134,7 @@ func initMigrator() *migrator.Migrator {
 				return err
 			},
 		},
-		&migrator.Migration{
+		&Migration{
 			Name: "Create answers table",
 			Func: func(tx *sql.Tx) error {
 				_, err := tx.Exec(
