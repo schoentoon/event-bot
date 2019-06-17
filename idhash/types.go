@@ -27,4 +27,6 @@ const (
 	SettingChangeDescription
 	SettingChangeTime
 	SettingChangeLocation
+
+	TogglePubliclyShareable
 )

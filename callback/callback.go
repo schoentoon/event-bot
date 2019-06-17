@@ -45,6 +45,8 @@ func HandleCallback(db *sql.DB, bot *tgbotapi.BotAPI, callback *tgbotapi.Callbac
 		return handleChangeEventProperty(db, bot, id, callback, "waiting_for_timestamp", "change_event_timestamp.tmpl")
 	case idhash.SettingChangeLocation:
 		return handleChangeEventProperty(db, bot, id, callback, "waiting_for_location", "change_event_location.tmpl")
+	case idhash.TogglePubliclyShareable:
+		return handleTogglePublicSharability(db, bot, id, callback)
 	}
 
 	return nil

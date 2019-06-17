@@ -21,15 +21,16 @@ type Vote struct {
 }
 
 type Event struct {
-	Name        string
-	Description string
-	AnswerMode  string
-	When        time.Time
-	Location    string
-	Yes         []Vote
-	YesCount    int
-	No          []Vote
-	Maybe       []Vote
+	Name              string
+	Description       string
+	AnswerMode        string
+	When              time.Time
+	Location          string
+	Yes               []Vote
+	YesCount          int
+	No                []Vote
+	Maybe             []Vote
+	PubliclyShareable bool
 }
 
 func FormatEventSettings(tx *sql.Tx, eventID int64) (string, Event, error) {
@@ -37,12 +38,12 @@ func FormatEventSettings(tx *sql.Tx, eventID int64) (string, Event, error) {
 }
 
 func FormatEvent(tx *sql.Tx, eventID int64) (string, Event, error) {
-	row := tx.QueryRow(`SELECT name, description, answers_options, "when", location
+	row := tx.QueryRow(`SELECT name, description, answers_options, "when", location, publicly_shareable
 		FROM public.events
 		WHERE id = $1`,
 		eventID)
 	var event Event
-	err := row.Scan(&event.Name, &event.Description, &event.AnswerMode, &event.When, &event.Location)
+	err := row.Scan(&event.Name, &event.Description, &event.AnswerMode, &event.When, &event.Location, &event.PubliclyShareable)
 	if err != nil {
 		return "", event, err
 	}
@@ -144,7 +145,7 @@ func updateExistingMessages(tx *sql.Tx, bot *tgbotapi.BotAPI, eventID int64) err
 	edit := tgbotapi.EditMessageTextConfig{
 		Text: msg,
 	}
-	edit.ReplyMarkup = utils.CreateInlineKeyboard(event.AnswerMode, eventID)
+	edit.ReplyMarkup = CreateInlineKeyboard(event, eventID)
 	edit.ParseMode = "HTML"
 
 	for {

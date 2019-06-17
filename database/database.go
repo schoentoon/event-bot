@@ -148,6 +148,16 @@ func initMigrator() *Migrator {
 				return err
 			},
 		},
+		&Migration{
+			Name: "Add publicly shareable field to events table",
+			Func: func(tx *sql.Tx) error {
+				_, err := tx.Exec(
+					`ALTER TABLE public.events
+						ADD COLUMN publicly_shareable boolean DEFAULT false
+					`)
+				return err
+			},
+		},
 	)
 }
 

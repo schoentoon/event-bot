@@ -6,7 +6,6 @@ import (
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
 	"gitlab.schoentoon.com/schoentoon/event-bot/events"
 	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
-	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
@@ -26,10 +25,11 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 	_, err = tx.Exec(`DECLARE events_cursor CURSOR FOR
 		SELECT id, name, description
 		FROM public.events
-		WHERE "owner" = $1
-		AND (name SIMILAR TO concat('%', $2::text, '%') OR
-			 description SIMILAR TO concat('%', $2::text, '%') OR
-			 id = $3)`,
+		WHERE (id = $3 AND publicly_shareable)
+		OR ("owner" = $1
+			AND (name SIMILAR TO concat('%', $2::text, '%') OR
+				description SIMILAR TO concat('%', $2::text, '%') OR
+				id = $3))`,
 		query.From.ID, query.Query, idFromQuery)
 	if err != nil {
 		return database.TxRollback(tx, err)
@@ -61,7 +61,7 @@ func HandleInlineQuery(db *sql.DB, bot *tgbotapi.BotAPI, query *tgbotapi.InlineQ
 
 		art := tgbotapi.NewInlineQueryResultArticleHTML(idhash.Encode(idhash.Event, id), name, rendered)
 		art.Description = description
-		art.ReplyMarkup = utils.CreateInlineKeyboard(event.AnswerMode, id)
+		art.ReplyMarkup = events.CreateInlineKeyboard(event, id)
 		inlineConf.Results = append(inlineConf.Results, art)
 	}
 

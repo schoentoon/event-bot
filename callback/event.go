@@ -159,3 +159,46 @@ func handleChangeEventProperty(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, 
 	_, err = utils.Send(bot, reply)
 	return err
 }
+
+func handleTogglePublicSharability(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *tgbotapi.CallbackQuery) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	var shareable bool
+	row := tx.QueryRow(
+		`UPDATE public.events
+			SET publicly_shareable = NOT publicly_shareable
+			WHERE id = $1
+			RETURNING publicly_shareable
+		`, eventID)
+	err = row.Scan(&shareable)
+	if err != nil {
+		return database.TxRollback(tx, err)
+	}
+
+	err = events.NeedsUpdate(tx, eventID)
+	if err != nil {
+		return database.TxRollback(tx, err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	rendered, err := templates.Execute("toggled_sharability.tmpl", shareable)
+	if err != nil {
+		return err
+	}
+
+	err = handleSettings(db, bot, eventID, callback)
+	if err != nil {
+		return err
+	}
+
+	reply := tgbotapi.NewCallback(callback.ID, rendered)
+	_, err = utils.AnswerCallbackQuery(bot, reply)
+	return err
+}

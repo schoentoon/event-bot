@@ -28,6 +28,16 @@ func handleMainMenu(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *t
 }
 
 func handleSettings(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *tgbotapi.CallbackQuery) error {
+	var shareable bool
+	row := db.QueryRow(`SELECT publicly_shareable
+		FROM public.events
+		WHERE id = $1`,
+		eventID)
+	err := row.Scan(&shareable)
+	if err != nil {
+		return err
+	}
+
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_change_name.tmpl", nil), idhash.Encode(idhash.SettingChangeName, eventID)),
@@ -36,7 +46,10 @@ func handleSettings(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *t
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_change_timestamp.tmpl", nil), idhash.Encode(idhash.SettingChangeTime, eventID)),
 			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_change_location.tmpl", nil), idhash.Encode(idhash.SettingChangeLocation, eventID)),
+		),
+		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_change_answers.tmpl", nil), idhash.Encode(idhash.SettingChangeAnswers, eventID)),
+			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_toggle_publicly_shareable.tmpl", shareable), idhash.Encode(idhash.TogglePubliclyShareable, eventID)),
 		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(templates.Button("button_back.tmpl", nil), idhash.Encode(idhash.MainMenu, eventID)),
@@ -45,7 +58,7 @@ func handleSettings(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, callback *t
 
 	edit := tgbotapi.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, keyboard)
 
-	_, err := utils.Send(bot, edit)
+	_, err = utils.Send(bot, edit)
 	return err
 }
 
