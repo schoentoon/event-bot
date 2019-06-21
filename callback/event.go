@@ -57,8 +57,9 @@ func handleEventVote(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idh
 		if answer == idhash.VoteYes && answer.String() == oldAnswer && options != idhash.ChangeAnswerYes.String() {
 			_, err = tx.Exec(`UPDATE public.answers
 				SET attendees = attendees + 1
-				WHERE event_id = $1`,
-				eventID)
+				WHERE event_id = $1
+				AND user_id = $2`,
+				eventID, callback.From.ID)
 			if err != nil {
 				return Invalid, database.TxRollback(tx, err)
 			}
