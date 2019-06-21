@@ -4,10 +4,14 @@ import (
 	"database/sql"
 	"log"
 	"time"
+
+	"github.com/getsentry/sentry-go"
 )
 
 // TxRollback helper funtion to automatically rollback and log issues with rollbacks
 func TxRollback(tx *sql.Tx, err error) error {
+	sentry.CaptureException(err)
+
 	rollbackerr := tx.Rollback()
 	if rollbackerr != nil {
 		log.Printf("Error while rolling back transaction %v", rollbackerr)

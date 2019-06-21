@@ -19,6 +19,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
+
+	"github.com/getsentry/sentry-go"
 )
 
 func main() {
@@ -26,6 +28,15 @@ func main() {
 	flag.Parse()
 
 	cfg, err := ReadConfig(*cfgfile)
+	if err != nil {
+		panic(err)
+	}
+
+	err = sentry.Init(sentry.ClientOptions{
+		Dsn: cfg.Sentry.Dsn,
+		AttachStacktrace: cfg.Sentry.AttachStacktrace,
+		Release: cfg.Sentry.Release,
+	})
 	if err != nil {
 		panic(err)
 	}

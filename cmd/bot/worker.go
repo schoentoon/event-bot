@@ -67,6 +67,8 @@ func worker(wg *sync.WaitGroup, db *sql.DB, bot *tgbotapi.BotAPI, ch tgbotapi.Up
 }
 
 func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
+	defer utils.Recover(update)
+
 	if update.Message != nil {
 		if !update.Message.Chat.IsPrivate() {
 			return nil
@@ -91,6 +93,8 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 					err = commands.HandleNewEventCommand(db, bot, update.Message)
 				case "help":
 					err = commands.SendHelp(bot, update.Message.Chat.ID)
+				case "panic":
+					panic("This is just a panic caused on purpose..")
 				}
 			}
 		case "waiting_for_event_name":
