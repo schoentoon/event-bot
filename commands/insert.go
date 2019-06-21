@@ -44,12 +44,7 @@ func HandleNewEventCommand(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Messa
 		}
 		reply = tgbotapi.NewMessage(msg.Chat.ID, rendered)
 	} else {
-		rendered, err := templates.Execute("something_went_wrong_try_later.tmpl", nil)
-		if err != nil {
-			return err
-		}
-		reply = tgbotapi.NewMessage(msg.Chat.ID, rendered)
-		log.Printf("Error while creating new event %v", err)
+		return utils.NewErrorWithChattableFromTemplate(err, "something_went_wrong_try_later.tmpl", msg.Chat.ID)
 	}
 
 	reply.ReplyToMessageID = msg.MessageID
@@ -148,7 +143,7 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 
 	var rendered string
 	if err != nil {
-		rendered, err = templates.Execute("something_went_wrong_try_later.tmpl", nil)
+		return utils.NewErrorWithChattableFromTemplate(err, "something_went_wrong_try_later.tmpl", msg.Chat.ID)
 	} else if edited {
 		rendered, err = templates.Execute("name_edited.tmpl", nil)
 	} else {
@@ -256,7 +251,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 
 	var rendered string
 	if err != nil {
-		rendered, err = templates.Execute("something_went_wrong_try_later.tmpl", nil)
+		return utils.NewErrorWithChattableFromTemplate(err, "something_went_wrong_try_later.tmpl", msg.Chat.ID)
 	} else if edited {
 		rendered, err = templates.Execute("description_edited.tmpl", nil)
 	} else {
@@ -365,7 +360,7 @@ func HandleNewEventTimestamp(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mes
 
 	var rendered string
 	if err != nil {
-		rendered, err = templates.Execute("something_went_wrong_try_later.tmpl", nil)
+		return utils.NewErrorWithChattableFromTemplate(err, "something_went_wrong_try_later.tmpl", msg.Chat.ID)
 	} else if edited {
 		rendered, err = templates.Execute("timestamp_edited.tmpl", nil)
 	} else {
@@ -509,15 +504,7 @@ func HandleNewEventLocation(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Mess
 	}(db, msg, where)
 
 	if err != nil {
-		rendered, err := templates.Execute("something_went_wrong_try_later.tmpl", nil)
-		if err != nil {
-			return err
-		}
-		reply := tgbotapi.NewMessage(msg.Chat.ID, rendered)
-		reply.ReplyToMessageID = msg.MessageID
-
-		_, err = utils.Send(bot, reply)
-		return err
+		return utils.NewErrorWithChattableFromTemplate(err, "something_went_wrong_try_later.tmpl", msg.Chat.ID)
 	}
 
 	return nil

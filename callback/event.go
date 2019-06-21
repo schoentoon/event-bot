@@ -101,7 +101,7 @@ func handleEventVote(db *sql.DB, bot *tgbotapi.BotAPI, eventID int64, answer idh
 
 	var rendered string
 	if err != nil {
-		rendered, err = templates.Execute("something_went_wrong_try_later.tmpl", nil)
+		return utils.NewErrorWithCallbackAnswerTemplate(err, "something_went_wrong_try_later.tmpl", callback)
 	} else {
 		switch action {
 		case PlusOne:

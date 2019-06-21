@@ -61,6 +61,9 @@ func worker(wg *sync.WaitGroup, db *sql.DB, bot *tgbotapi.BotAPI, ch tgbotapi.Up
 	for update := range ch {
 		err := job(update, db, bot)
 		if err != nil {
+			if cerr, ok := err.(*utils.ErrorWithChattable); ok {
+				cerr.Send(bot)
+			}
 			log.Printf("%#v %s on %#v", err, err, update)
 		}
 	}
