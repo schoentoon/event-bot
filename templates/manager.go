@@ -3,13 +3,24 @@ package templates
 import (
 	"html/template"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/Masterminds/sprig"
 )
+
+func reportPanic(name string, data interface{}) {
+	if perr := recover(); perr != nil {
+		hub := sentry.CurrentHub().Clone()
+
+		hub.Scope().SetExtra("template", name)
+		hub.Scope().SetExtra("data", data)
+
+		hub.Recover(perr)
+	}
+}
 
 var cache *template.Template
 var mutex sync.RWMutex
@@ -20,14 +31,14 @@ func Load(dir string) (err error) {
 
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	cache = template.New("").Funcs(sprig.FuncMap())
 
 	for _, file := range files {
 		rawdata, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
 		if err != nil {
-			return err
+			panic(err)
 		}
 		data := string(rawdata)
 		data = strings.ReplaceAll(data, "\n", "")
@@ -35,7 +46,7 @@ func Load(dir string) (err error) {
 		tmpl := cache.New(file.Name())
 		_, err = tmpl.Parse(data)
 		if err != nil {
-			return err
+			panic(err)
 		}
 	}
 
@@ -43,6 +54,8 @@ func Load(dir string) (err error) {
 }
 
 func Execute(name string, data interface{}) (string, error) {
+	defer reportPanic(name, data)
+
 	mutex.RLock()
 	defer mutex.RUnlock()
 
@@ -50,13 +63,15 @@ func Execute(name string, data interface{}) (string, error) {
 
 	err := cache.ExecuteTemplate(&b, name, data)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
 	return b.String(), nil
 }
 
 func Button(name string, data interface{}) string {
+	defer reportPanic(name, data)
+
 	mutex.RLock()
 	defer mutex.RUnlock()
 
@@ -64,8 +79,7 @@ func Button(name string, data interface{}) string {
 
 	err := cache.ExecuteTemplate(&b, name, data)
 	if err != nil {
-		log.Println(err)
-		return ""
+		panic(err)
 	}
 
 	return b.String()

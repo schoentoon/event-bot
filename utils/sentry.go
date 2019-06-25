@@ -3,8 +3,8 @@ package utils
 import (
 	"encoding/json"
 
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"github.com/getsentry/sentry-go"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func Recover(update tgbotapi.Update) {
@@ -16,7 +16,7 @@ func Recover(update tgbotapi.Update) {
 			panic(err)
 		}
 
-		hub.Scope().SetExtras(map[string]interface{}{"request":string(data)})
+		hub.Scope().SetExtra("request", string(data))
 
 		hub.Recover(perr)
 	}

@@ -13,11 +13,13 @@ func GetUserState(db *sql.DB, userID int) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
 		row = tx.QueryRow("INSERT INTO user_states (user_id) VALUES ($1) RETURNING state", userID)
 		err = row.Scan(&out)
 		if err != nil {
-			return "", err
+			return "", TxRollback(tx, err)
 		}
+
 		err = tx.Commit()
 		if err != nil {
 			return "", err
@@ -52,7 +54,7 @@ func ChangeUserState(db *sql.DB, userID int, newState string) error {
 		DO UPDATE
 		SET state = EXCLUDED.state`, userID, newState)
 	if err != nil {
-		return err
+		return TxRollback(tx, err)
 	}
 
 	return tx.Commit()

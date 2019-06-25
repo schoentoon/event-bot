@@ -2,7 +2,6 @@ package idhash
 
 import (
 	"fmt"
-	"log"
 
 	hashids "github.com/speps/go-hashids"
 )
@@ -24,7 +23,7 @@ func InitHasher(salt string, minLength int) (err error) {
 func Encode(typ HashType, id int64) string {
 	out, err := hasher.EncodeInt64([]int64{int64(typ), id})
 	if err != nil {
-		log.Fatal(typ, id, err)
+		panic(fmt.Sprintf("%#v %#v %#v", typ, id, err))
 	}
 
 	return out

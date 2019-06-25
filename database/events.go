@@ -9,6 +9,7 @@ func EventWantsEdit(tx *sql.Tx, eventID int64, userID int) error {
 	if err != nil {
 		return err
 	}
+
 	_, err = tx.Exec(`UPDATE public.events
 		SET wants_edit = true
 		WHERE id = $1`, eventID)

@@ -62,7 +62,10 @@ func worker(wg *sync.WaitGroup, db *sql.DB, bot *tgbotapi.BotAPI, ch tgbotapi.Up
 		err := job(update, db, bot)
 		if err != nil {
 			if cerr, ok := err.(*utils.ErrorWithChattable); ok {
-				cerr.Send(bot)
+				err := cerr.Send(bot)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 			log.Printf("%#v %s on %#v", err, err, update)
 		}
@@ -96,8 +99,6 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 					err = commands.HandleNewEventCommand(db, bot, update.Message)
 				case "help":
 					err = commands.SendHelp(bot, update.Message.Chat.ID)
-				case "panic":
-					panic("This is just a panic caused on purpose..")
 				}
 			}
 		case "waiting_for_event_name":

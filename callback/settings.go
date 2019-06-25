@@ -5,11 +5,10 @@ import (
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/events"
 	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
-
 	"gitlab.schoentoon.com/schoentoon/event-bot/database"
-
 	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
+
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 

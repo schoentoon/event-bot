@@ -5,27 +5,27 @@ import (
 
 	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
 
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"github.com/getsentry/sentry-go"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 // ErrorWithChattable an error that also indicates that the attached Chattable should be send to indicate the error to the enduser
 type ErrorWithChattable struct {
-	ErrorMsg error
-	Chattable *tgbotapi.Chattable
+	ErrorMsg       error
+	Chattable      *tgbotapi.Chattable
 	CallbackAnswer *tgbotapi.CallbackConfig
 }
 
 func NewErrorWithChattable(err error, sendable tgbotapi.Chattable) *ErrorWithChattable {
 	return &ErrorWithChattable{
-		ErrorMsg: err,
+		ErrorMsg:  err,
 		Chattable: &sendable,
 	}
 }
 
 func NewErrorWithCallbackAnswer(err error, answer tgbotapi.CallbackConfig) *ErrorWithChattable {
 	return &ErrorWithChattable{
-		ErrorMsg: err,
+		ErrorMsg:       err,
 		CallbackAnswer: &answer,
 	}
 }
@@ -44,11 +44,11 @@ func NewErrorWithChattableFromTemplate(err error, template_name string, chatID i
 
 func NewErrorWithCallbackAnswerTemplate(err error, template_name string, callback *tgbotapi.CallbackQuery) *ErrorWithChattable {
 	hub := sentry.CurrentHub().Clone()
-	data, err := json.Marshal(callback)
-	if err != nil {
-		panic(err)
+	data, jerr := json.Marshal(callback)
+	if jerr != nil {
+		panic(jerr)
 	}
-	hub.Scope().SetExtras(map[string]interface{}{"request":string(data)})
+	hub.Scope().SetExtras(map[string]interface{}{"request": string(data)})
 
 	hub.CaptureException(err)
 
@@ -64,7 +64,7 @@ func (e *ErrorWithChattable) Error() string {
 	return e.ErrorMsg.Error()
 }
 
-func (e *ErrorWithChattable) Send(bot *tgbotapi.BotAPI) (error) {
+func (e *ErrorWithChattable) Send(bot *tgbotapi.BotAPI) error {
 	switch {
 	case e.Chattable != nil:
 		_, err := bot.Send(*e.Chattable)
@@ -73,6 +73,6 @@ func (e *ErrorWithChattable) Send(bot *tgbotapi.BotAPI) (error) {
 		_, err := bot.AnswerCallbackQuery(*e.CallbackAnswer)
 		return err
 	default:
-		return nil
+		panic("No chattable? Then what's the point of using this struct?")
 	}
 }
