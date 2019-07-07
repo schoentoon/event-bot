@@ -16,6 +16,8 @@ WORKDIR /bin/
 
 COPY --from=builder /app/app .
 
+COPY tmpl /tmpl/
+
 WORKDIR /app/
 
 ENTRYPOINT [ "/bin/app" ]

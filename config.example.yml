@@ -14,5 +14,5 @@ idhash:
   salt: "Change this!"
   minLength: 10
 workers: 8
-templates: ./tmpl
+templates: /tmpl
 eventRefreshInterval: 500ms
