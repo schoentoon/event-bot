@@ -27,6 +27,10 @@ build:
     - go mod download && go install golang.org/x/tools/cmd/stringer
     - go generate ./...
     - go build ./...
+  artifacts:
+    paths:
+      - event-bot
+      - tmpl/
 
 build-docker:
   stage: build
