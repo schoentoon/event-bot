@@ -2,3 +2,4 @@ event-bot
 config.yml
 .vscode/
 *_string.go
+bot
