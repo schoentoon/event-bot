@@ -52,7 +52,7 @@ func InsertUserTx(tx *sql.Tx, user *tgbotapi.User) (bool, error) {
 
 	_, err = tx.Exec(`UPDATE inline_messages
 		SET needs_update = true
-		WHERE event_id = (
+		WHERE event_id IN (
 			SELECT event_id
 			FROM answers
 			WHERE user_id = $1
