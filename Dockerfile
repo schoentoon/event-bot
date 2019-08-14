@@ -10,7 +10,7 @@ COPY . /app
 
 RUN go generate ./... && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./cmd/bot/...
 
-FROM gcr.io/distroless/base
+FROM golang:latest
 
 WORKDIR /bin/
 
