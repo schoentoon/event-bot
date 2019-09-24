@@ -1,0 +1,11 @@
+[Unit]
+Description=Telegram Event bot
+After=postgresql.service network.service
+
+[Service]
+ExecStart=/absolute/path/to/binary/bot --config /absolute/path/to/config.yml
+WorkingDirectory=/absolute/path/for/templates
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
