@@ -11,8 +11,8 @@ import (
 )
 
 func UpdateLoop(db *sql.DB, bot *tgbotapi.BotAPI, interval time.Duration) {
-	tick := time.Tick(interval)
-	for range tick {
+	ticker := time.NewTicker(interval)
+	for range ticker.C {
 		err := run(db, bot)
 		if err != nil {
 			log.Println(err)
