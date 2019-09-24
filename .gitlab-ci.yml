@@ -62,7 +62,7 @@ deploy_production:
     - eval $(ssh-agent -s)
     - chmod 700 $SSH_PRIVATE_KEY_FILE
     - ssh-add $SSH_PRIVATE_KEY_FILE
-    - rsync -e "ssh -o StrictHostKeyChecking=no" -rv --stats bot tmpl $HOST:$REMOTEPATH
+    - rsync -e "ssh -o StrictHostKeyChecking=no" -rvh --stats bot tmpl $HOST:$REMOTEPATH
     - ssh -o StrictHostKeyChecking=no $HOST systemctl --user restart eventbot
   environment:
     name: production
