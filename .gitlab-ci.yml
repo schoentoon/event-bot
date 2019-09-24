@@ -3,6 +3,7 @@ image: golang:latest
 stages:
   - test
   - build
+  - deploy
 
 test:
   stage: test
@@ -42,6 +43,27 @@ build-docker:
   only:
     - master
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN r.gitlab.schoentoon.com
-    - docker build -t r.gitlab.schoentoon.com/schoentoon/event-bot .
-    - docker push r.gitlab.schoentoon.com/schoentoon/event-bot
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE
+
+deploy_production:
+  stage: deploy
+  when: manual
+  image: alpine:latest
+  tags:
+    - docker
+  needs:
+    - build
+  only:
+    - master
+  script:
+    - apk add openssh
+    - eval $(ssh-agent -s)
+    - chmod 700 $SSH_PRIVATE_KEY_FILE
+    - ssh-add $SSH_PRIVATE_KEY_FILE
+    - ssh -o StrictHostKeyChecking=no $HOST systemctl --user stop eventbot
+    - scp -o StrictHostKeyChecking=no bot $HOST:$REMOTEPATH
+    - ssh -o StrictHostKeyChecking=no $HOST systemctl --user start eventbot
+  environment:
+    name: production
