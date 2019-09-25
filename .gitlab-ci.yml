@@ -51,8 +51,6 @@ deploy_production:
   stage: deploy
   when: manual
   image: alpine:latest
-  tags:
-    - docker
   needs:
     - build
   only:
