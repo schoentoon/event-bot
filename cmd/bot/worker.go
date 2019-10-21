@@ -99,6 +99,8 @@ func job(update tgbotapi.Update, db *sql.DB, bot *tgbotapi.BotAPI) error {
 					err = commands.HandleNewEventCommand(db, bot, update.Message)
 				case "help":
 					err = commands.SendHelp(bot, update.Message.Chat.ID)
+				case "start":
+					err = commands.SendStart(bot, update.Message.Chat.ID)
 				}
 			}
 		case "waiting_for_event_name":
