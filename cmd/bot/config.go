@@ -31,6 +31,7 @@ type Config struct {
 		ListenAddr string `yaml:"addr"`
 	} `yaml:"prometheus"`
 	Sentry struct {
+		Enabled          bool   `yaml:"enabled"`
 		Dsn              string `yaml:"dsn"`
 		AttachStacktrace bool   `yaml:"stacktrace"`
 		Release          string `yaml:"release"`

@@ -32,13 +32,15 @@ func main() {
 		panic(err)
 	}
 
-	err = sentry.Init(sentry.ClientOptions{
-		Dsn: cfg.Sentry.Dsn,
-		AttachStacktrace: cfg.Sentry.AttachStacktrace,
-		Release: cfg.Sentry.Release,
-	})
-	if err != nil {
-		panic(err)
+	if cfg.Sentry.Enabled {
+		err = sentry.Init(sentry.ClientOptions{
+			Dsn:              cfg.Sentry.Dsn,
+			AttachStacktrace: cfg.Sentry.AttachStacktrace,
+			Release:          cfg.Sentry.Release,
+		})
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	err = idhash.InitHasher(cfg.IDHash.Salt, cfg.IDHash.MinLength)

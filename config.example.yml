@@ -7,6 +7,7 @@ postgres:
 prometheus:
   addr: ":8080"
 sentry:
+  enabled: false
   dsn: ""
   stacktrace: true
   release: "dev"
