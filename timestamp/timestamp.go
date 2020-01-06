@@ -2,10 +2,10 @@ package timestamp
 
 import (
 	"time"
-
-	"github.com/araddon/dateparse"
 )
 
+const LAYOUT = "02-01-2006 15:04"
+
 func ParseTimestampMessage(msg string) (time.Time, error) {
-	return dateparse.ParseAny(msg)
+	return time.Parse(LAYOUT, msg)
 }
