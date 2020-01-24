@@ -54,7 +54,10 @@ deploy_production:
   needs:
     - build
   only:
-    - master
+    refs:
+      - master
+    variables:
+      - $CI_SERVER_HOST == "gitlab.schoentoon.com"
   script:
     - apk add openssh rsync
     - eval $(ssh-agent -s)
