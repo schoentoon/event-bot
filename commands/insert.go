@@ -255,7 +255,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 	} else if edited {
 		rendered, err = templates.Execute("description_edited.tmpl", nil)
 	} else {
-		rendered, err = templates.Execute("description_set_enter_description.tmpl", nil)
+		rendered, err = templates.Execute("description_set_enter_timestamp.tmpl", nil)
 	}
 	if err != nil {
 		return err
