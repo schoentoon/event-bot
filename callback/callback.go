@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
+	"gitlab.com/schoentoon/event-bot/idhash"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )

@@ -1,4 +1,4 @@
-module gitlab.schoentoon.com/schoentoon/event-bot
+module gitlab.com/schoentoon/event-bot
 
 go 1.12
 

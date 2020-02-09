@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
+	"gitlab.com/schoentoon/event-bot/templates"
 
 	"github.com/getsentry/sentry-go"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"

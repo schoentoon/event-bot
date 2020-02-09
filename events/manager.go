@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/database"
+	"gitlab.com/schoentoon/event-bot/database"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )

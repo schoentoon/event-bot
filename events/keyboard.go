@@ -1,8 +1,8 @@
 package events
 
 import (
-	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
-	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
+	"gitlab.com/schoentoon/event-bot/idhash"
+	"gitlab.com/schoentoon/event-bot/templates"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )

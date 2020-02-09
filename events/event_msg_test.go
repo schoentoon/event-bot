@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
+	"gitlab.com/schoentoon/event-bot/templates"
 )
 
 func init() {

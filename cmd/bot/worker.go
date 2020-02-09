@@ -8,11 +8,11 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/callback"
-	"gitlab.schoentoon.com/schoentoon/event-bot/commands"
-	"gitlab.schoentoon.com/schoentoon/event-bot/database"
-	"gitlab.schoentoon.com/schoentoon/event-bot/inline"
-	"gitlab.schoentoon.com/schoentoon/event-bot/utils"
+	"gitlab.com/schoentoon/event-bot/callback"
+	"gitlab.com/schoentoon/event-bot/commands"
+	"gitlab.com/schoentoon/event-bot/database"
+	"gitlab.com/schoentoon/event-bot/inline"
+	"gitlab.com/schoentoon/event-bot/utils"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )

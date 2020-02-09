@@ -10,10 +10,10 @@ import (
 	"sync"
 	"syscall"
 
-	"gitlab.schoentoon.com/schoentoon/event-bot/database"
-	"gitlab.schoentoon.com/schoentoon/event-bot/events"
-	"gitlab.schoentoon.com/schoentoon/event-bot/idhash"
-	"gitlab.schoentoon.com/schoentoon/event-bot/templates"
+	"gitlab.com/schoentoon/event-bot/database"
+	"gitlab.com/schoentoon/event-bot/events"
+	"gitlab.com/schoentoon/event-bot/idhash"
+	"gitlab.com/schoentoon/event-bot/templates"
 
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
