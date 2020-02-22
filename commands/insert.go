@@ -161,7 +161,10 @@ func HandleNewEventName(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message)
 }
 
 func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.Message) error {
-	if len(msg.Text) == 0 || len(msg.Text) > 512 {
+	description := msg.Text
+	if msg.IsCommand() && msg.Command() == "skip" {
+		description = ""
+	} else if len(msg.Text) == 0 || len(msg.Text) > 512 {
 		rendered, err := templates.Execute("description_too_long.tmpl", nil)
 		if err != nil {
 			return err
@@ -188,7 +191,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 		if err != nil {
 			// in case of a no rows error we're changing a description of an event
 			if err == sql.ErrNoRows {
-				_, err = tx.Exec(`UPDATE public.drafts SET description = $1 WHERE user_id = $2`, msg.Text, msg.From.ID)
+				_, err = tx.Exec(`UPDATE public.drafts SET description = $1 WHERE user_id = $2`, description, msg.From.ID)
 				if err != nil {
 					return false, database.TxRollback(tx, err)
 				}
@@ -207,7 +210,7 @@ func HandleNewEventDescription(db *sql.DB, bot *tgbotapi.BotAPI, msg *tgbotapi.M
 			SET description = $1,
 			wants_edit = false
 			WHERE id = $2
-			AND wants_edit`, msg.Text, eventID)
+			AND wants_edit`, description, eventID)
 		if err != nil {
 			return false, database.TxRollback(tx, err)
 		}
